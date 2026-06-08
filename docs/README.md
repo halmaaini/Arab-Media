@@ -51,6 +51,7 @@ Read in order for the full picture; jump by topic when implementing a ticket.
 | `12-delivery-plan.md` | Phases 0–6 with entry/exit criteria, dependencies, sequencing | Lead / PM |
 | `13-task-backlog.md` | Granular, ordered tickets with acceptance criteria & files touched | Dev agents |
 | `14-acceptance-and-dod.md` | End-to-end acceptance scenarios, QA checklist, Definition of Done | QA / lead |
+| `15-gap-review-and-resolutions.md` | Review log: gaps found tracing the workflows + their binding resolutions; decisions to confirm | Lead / owner |
 
 ---
 

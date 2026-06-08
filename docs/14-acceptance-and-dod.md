@@ -17,6 +17,7 @@ pass. Run the **anon deny-tests** in every environment before exposing data.
 | S8 | read a public object URL | allowed |
 | S9 | `rpc increment_listens(published_id)` | listens +1 |
 | S10 | `rpc increment_listens(draft_id)` | no change (guarded by status) |
+| S11 | direct `insert into messages` with the anon key (bypassing the function) | **denied** — no anon insert policy (ADR-009); confirms the captcha can't be skipped |
 
 ## 14.2 End-to-end acceptance scenarios
 
@@ -66,6 +67,20 @@ pass. Run the **anon deny-tests** in every environment before exposing data.
 **A10 — Resilience**
 - A simulated query failure shows a retry card, not a white screen (error
   boundary). A broken audio URL shows an error without crashing playback UI.
+- A favorited summary that gets unpublished/deleted is **silently dropped** from
+  the Library (no broken card, no throw).
+
+**A11 — Categories management (ADR-010)**
+- Owner creates a new category and assigns a summary to it (appears publicly).
+- Deleting a category that still has summaries is **blocked** with a prompt to
+  reassign; after reassigning, delete succeeds; deleting the last category is
+  prevented.
+
+**A12 — Runtime SEO freshness (ADR-004)**
+- A summary published **with no redeploy** appears in `sitemap.xml` within
+  minutes and returns real `<title>`/meta/OG to a crawler user-agent.
+- Sharing a cover-less (seeded) summary unfurls with a **generated** OG card;
+  one with an uploaded cover unfurls with that image (ADR-011).
 
 ## 14.3 Cross-cutting QA checklist (run desktop + mobile, both themes)
 

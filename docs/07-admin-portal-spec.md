@@ -42,7 +42,9 @@ All numbers **derived**, never hardcoded.
 | "إضافة ملخّص" | navigate `owner-edit` (no id) |
 
 ## 7.4 Editor (`owner-edit`) — create & edit
-Binds the existing form to a `summaries` row. **Two prototype gaps to fix.**
+Binds the existing form to a `summaries` row. Fixes **two prototype gaps**
+(key-idea *body* capture; inert upload dropzones) and adds the **slug** field
+(ADR-008); `is_new` becomes derived (ADR-012).
 
 | Field (existing) | Maps to | Notes |
 |------------------|---------|-------|
@@ -56,8 +58,10 @@ Binds the existing form to a `summaries` row. **Two prototype gaps to fix.**
 | الأفكار الرئيسية | `key_ideas[{title,body}]` | **FIX:** the prototype captures only the *title*. Add a **body/explanation** field per idea (the `x`). Min 3 ideas to publish. Reorder optional (v2). |
 | **صورة الغلاف** (dropzone) | `cover_path` | **FIX:** wire real image upload (doc 05.2); preview; if none, show generated cover from `palette_key` |
 | palette (currently implicit) | `palette_key` | add a palette picker (8 options) so the generated-cover fallback is controllable |
+| الرابط (slug) | `slug` | **NEW field** (ADR-008): auto-suggested by transliterating the Arabic title → Latin (lowercase, hyphenate, strip punctuation), uniqueness-checked; editable; if left blank, fall back to a short id-based slug; **immutable after first publish** (warn — changing breaks links/SEO) |
 | الحالة (مسودّة/منشور) | drives save vs publish | see below |
 | ملخّص مميّز (toggle) | `featured` | as-is |
+| ("جديد" badge) | `is_new` | **derived** from `published_at` at query time (ADR-012); no manual toggle needed (optional override only) |
 
 **Save / Publish actions (replace the toast-only handler):**
 - **حفظ كمسودّة** → `adminCreate`/`adminUpdate` with `status='draft'`.
@@ -96,8 +100,25 @@ Backed by `site_settings` (singleton).
 Save → `adminUpdateSettings`. These values drive the **public** Publisher/About/
 Contact pages (doc 08), so editing here updates the live site.
 
-## 7.7 Admin-wide requirements
+## 7.7 Categories management (`owner-categories`) — NEW (ADR-010, gap review)
+The prototype has 9 fixed categories and no way to manage them; a real CMS must
+let the owner grow the taxonomy.
+| Element | Behaviour |
+|---------|-----------|
+| List categories | `listCategories()` with summary counts per category |
+| Create / edit | `adminUpsertCategory({id,name,blurb,icon,sortOrder})`; `id` is a slug (auto-suggested, editable, unique) |
+| Reorder | edit `sort_order` (drag or numeric) — drives public ordering |
+| Delete | **blocked while any summary references it** (FK `on delete restrict`). UI must first offer to **reassign** those summaries to another category, then allow delete. Never orphan a summary. |
+| Empty/last-category guard | prevent deleting the last category |
+
+## 7.8 Admin-wide requirements
 - All admin mutations show optimistic or pending UI + success/error toast.
 - All admin reads/writes rely on RLS; the UI guard is convenience, not security.
 - Logout in the owner shell → `signOut` → redirect to login.
-- No admin action may leave orphaned storage objects (delete cascades media).
+- No admin action may leave orphaned storage objects (delete cascades media) or
+  orphaned summaries (category delete is reassign-or-block).
+- **First-admin bootstrap & recovery** (gap review): the owner account is created
+  once in the Supabase dashboard and its `auth.users.id` inserted into `admins`
+  via SQL (no client path). Password reset uses Supabase's email recovery flow;
+  document the steps in `11-environments-and-cicd.md`. There is no self-serve
+  admin sign-up.

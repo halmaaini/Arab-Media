@@ -52,11 +52,21 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* build passes in CI; grep guard fails if a service-role key is imported under `src/`.
 - *Files:* `.env.example`, `.github/workflows/ci.yml` (or chosen CI), `vercel.json`.
 
+**P0-10 ☐ First-admin bootstrap (dev + prod)** (doc 11.2, 07.8) — *prereq for all Phase 3*
+- Create owner auth user in each project; insert into `admins` via SQL; configure password-reset email.
+- *Accept:* logging in as the owner makes `is_admin()` true; a non-admin authed user is false; reset email works.
+- *Files:* (Supabase dashboard/SQL — document in `supabase/seed/README`).
+
 ## Phase 1 — Content from DB
 
+**P1-0 ☐ Generate seed snapshot** (doc 09.1)
+- One-off extract `src/data.js` → committed `supabase/seed/content.json` (keys already renamed `t→title,x→body`; `palette_key` resolved; owner/settings/contact included).
+- *Accept:* snapshot committed; contains 9 categories + 15 summaries; seed no longer needs `data.js`.
+- *Files:* `scripts/extract-seed.mjs`, `supabase/seed/content.json`.
+
 **P1-1 ☐ Seed runner** (doc 09)
-- `scripts/seed.mjs`: idempotent upsert of categories, summaries, site_settings from `data.js`; dev-only messages.
-- *Accept:* dev shows 9 categories, 15 published summaries; re-run doesn't duplicate; palette keys resolved (fail loud if not).
+- `scripts/seed.mjs`: idempotent upsert of categories, summaries, site_settings from **`supabase/seed/content.json`** (NOT `data.js` — it gets deleted in P1-8); dev-only messages.
+- *Accept:* dev shows 9 categories, 15 published summaries; re-run doesn't duplicate; palette keys resolved (fail loud if not); seed runs green even with `src/data.js` absent.
 - *Files:* `scripts/seed.mjs`.
 
 **P1-2 ☐ Data-access modules** (doc 06.2)
@@ -137,9 +147,9 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* drafts visible to admin only; delete removes the storage objects too.
 - *Files:* `src/owner.jsx`.
 
-**P3-4 ☐ Editor bound to summaries + the two fixes** (doc 07.4)
-- Bind all fields; **key-idea body field**; **real audio + cover upload**; palette picker; split body into paragraphs.
-- *Accept:* create/edit persists every field incl. each idea's body; uploads set path/duration; generated-cover fallback when no image.
+**P3-4 ☐ Editor bound to summaries + the fixes** (doc 07.4) — *depends on P2-1 (upload helpers)*
+- Bind all fields; **key-idea body field**; **slug field** (transliterated suggestion, unique, immutable post-publish — ADR-008); **real audio + cover upload**; palette picker; split body into paragraphs; `is_new` derived (no manual toggle — ADR-012).
+- *Accept:* create/edit persists every field incl. each idea's body and the slug; uploads set path/duration; generated-cover fallback when no image; editing a published slug warns.
 - *Files:* `src/owner.jsx`.
 
 **P3-5 ☐ Save draft / Publish guard / preview** (doc 07.4)
@@ -162,6 +172,11 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* public bundle no longer contains admin code (verify chunk).
 - *Files:* `src/App.jsx`.
 
+**P3-9 ☐ Categories management screen** (doc 07.7, ADR-010)
+- New `owner-categories`: list w/ counts, create/edit/reorder, delete **blocked while referenced** (offer reassignment first), last-category guard.
+- *Accept:* owner can add a category and assign a summary to it; deleting a referenced category is blocked until summaries are reassigned; ordering drives public lists.
+- *Files:* `src/owner.jsx`, `src/api/categories.js`.
+
 ## Phase 4 — Engagement
 
 **P4-1 ☐ Listen counting wired** (doc 05.10, 08.2)
@@ -169,10 +184,10 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* one play → +1 listen; replays same session don't double-count.
 - *Files:* `src/store.jsx`, `src/api/engagement.js`.
 
-**P4-2 ☐ Contact form → messages (Turnstile + honeypot)** (doc 04.5, 08.3)
-- Real insert; token verified server-side; success/error states.
-- *Accept:* a submission appears in the admin inbox; bot/honeypot submissions rejected.
-- *Files:* `src/pages.jsx` (Contact), `src/api/messages.js`, `api/contact-verify.js` (serverless).
+**P4-2 ☐ Contact form → messages via verified function** (doc 04.3/08.3, ADR-009)
+- The **function** verifies Turnstile + honeypot/rate-limit and **performs the insert with the service role**; client never inserts directly; `messages` has no anon insert policy.
+- *Accept:* a submission appears in the admin inbox; bot/honeypot rejected; **a direct anon `insert into messages` from the browser is denied** (deny-test S-spam, doc 14).
+- *Files:* `src/pages.jsx` (Contact), `src/api/messages.js`, `api/submit-message.js` (or Supabase Edge Function).
 
 ## Phase 5 — Launch readiness
 
@@ -180,9 +195,10 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* detail sets per-summary title/description/og:image (cover).
 - *Files:* `src/*` (helmet integration), `index.html`.
 
-**P5-2 ☐ Prerender public routes + sitemap/robots** (doc 10.1)
-- *Accept:* crawler/unfurler gets real HTML; `sitemap.xml` lists published slugs; `robots.txt` references it.
-- *Files:* build/prerender config or `api/og`/`api/sitemap`, `vercel.json`.
+**P5-2 ☐ Runtime bot-render + runtime sitemap/robots** (doc 10.1, ADR-004)
+- Serverless **bot-render** fn serves real HTML/meta to crawlers on demand; **runtime** `sitemap.xml` fn reads the DB per request (NOT build-time — must include summaries published without a redeploy); `robots.txt` references it.
+- *Accept:* a summary published with no redeploy appears in `sitemap.xml` and returns real meta to a crawler UA within minutes.
+- *Files:* `api/render.js`, `api/sitemap.js`, `public/robots.txt`, `vercel.json`.
 
 **P5-3 ☐ Analytics + Sentry** (doc 10.2)
 - *Accept:* a pageview records; a thrown test error reaches Sentry; PII scrubbed.
@@ -192,9 +208,14 @@ items are green. Cross-references point to the spec doc that governs the detail.
 - *Accept:* Lighthouse Perf ≥85, A11y ≥95 mobile; reduced-motion respected.
 - *Files:* various.
 
-**P5-5 ☐ Icons / manifest / OG image + CSP headers** (doc 10.6, 10.8)
-- *Accept:* installable PWA manifest; favicon set; OG image asset present; CSP headers live.
+**P5-5 ☐ Icons / manifest + CSP headers** (doc 10.6, 10.8)
+- *Accept:* installable PWA manifest; favicon set; site-wide default OG image present; CSP headers live.
 - *Files:* `public/*`, `index.html`, `vercel.json`.
+
+**P5-6 ☐ Generated per-summary OG image** (doc 10.8, ADR-011)
+- Serverless OG-image fn renders a card from `palette_key` + title/author for cover-less summaries; uploaded `cover_path` takes precedence.
+- *Accept:* sharing a seeded (cover-less) summary unfurls with a generated card; a summary with an uploaded cover unfurls with that image.
+- *Files:* `api/og-image.js`, head-meta wiring.
 
 ## Phase 6 — Hardening & launch
 

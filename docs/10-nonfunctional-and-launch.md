@@ -13,15 +13,18 @@ content site this matters. v1 approach (no framework rewrite):
    `<title>`, `meta description`, canonical, and per-**summary** `og:title`,
    `og:description`, `og:image` (the cover URL), `og:locale=ar_AR`,
    `twitter:card`. (Site-wide defaults already added to `index.html`.)
-2. **Prerender public routes at build/deploy** — generate static HTML snapshots
-   for the home, browse, categories, about, publisher, and each published
-   **summary** route (read slugs from the DB at build time). Options: a
-   prerender step in the Vite build, or a Vercel serverless function that
-   server-renders meta+content for bot user-agents. Pick one in the Phase 5
-   ticket and record it.
-3. **`sitemap.xml` + `robots.txt`** — sitemap lists all published summary URLs
-   (generated from the DB; refresh on publish or on a schedule). Reference it in
-   `robots.txt`.
+2. **Runtime bot-render, NOT build-time prerender** (ADR-004 correction).
+   Because the owner publishes at runtime with no redeploy, any build-time
+   snapshot is stale for newly published summaries. Use a **Vercel serverless
+   function** that, for crawler/social user-agents (and ideally all requests to
+   a summary URL), server-renders real `<title>`/meta/OG + the summary's text
+   from the DB on demand. Human visitors still get the SPA. (Build-time
+   prerendering may be *added* later behind a publish-triggered Vercel deploy
+   hook, but is not the v1 mechanism.)
+3. **`sitemap.xml` + `robots.txt` generated at RUNTIME** — a serverless function
+   reads published slugs from the DB on each request (cache briefly). A
+   build-time sitemap would miss summaries published after deploy. Reference the
+   sitemap in `robots.txt`.
 4. **Structured data** — JSON-LD `Article`/`AudioObject` per summary (optional
    but valuable).
 5. **Strategic note:** if organic search becomes a primary channel, the robust
@@ -89,8 +92,12 @@ content site this matters. v1 approach (no framework rewrite):
 - Connect a **custom domain** in Vercel (owner buys it); set as production
   domain; update canonical/OG URLs and Supabase allowed redirect/CORS origins.
 - **Favicon + app icons + `manifest.webmanifest`** (PWA-installable; matches the
-  "device-based, no login" intent). Add `og:image` asset (currently meta exists,
-  image missing). Maskable icon, theme-color already set per theme.
+  "device-based, no login" intent). Maskable icon, theme-color already set per theme.
+- **`og:image` — generated, not just static** (ADR-011). A site-wide default OG
+  image plus a **serverless OG-image function** that renders a per-summary card
+  (palette + title + author) for summaries **without** an uploaded cover — the 15
+  seeded summaries have only the CSS-generated cover, which is not a shareable
+  image URL. Uploaded covers (`cover_path`) take precedence over the generated card.
 
 ## 10.9 Reliability
 - Supabase automated backups on; documented restore (doc 11).

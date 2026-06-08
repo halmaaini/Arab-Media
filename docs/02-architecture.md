@@ -54,7 +54,8 @@
 4. **Listen** — `<audio>` streams `audio_path`'s public URL; on a qualifying
    play the client calls `increment_listens` RPC (anonymous, debounced).
 5. **Resume** — playback position saved to `localStorage` (device-based, D3).
-6. **Reach out** — contact form `insert` into `messages` (anon INSERT policy).
+6. **Reach out** — contact form → verified `submit-message` function →
+   `insert` into `messages` with the service role (no anon insert; ADR-009).
 7. **Manage** — admin inbox reads `messages`; marks read/archived (admin RLS).
 
 ## 2.4 Repository layout (target)
@@ -108,10 +109,16 @@ never touches production. See `11-environments-and-cicd.md`.
   `localStorage`. Simpler auth surface (admin only), no PII for visitors.
 - **ADR-004 — Keep the Vite SPA for v1; do not migrate to Next.js.** Rationale:
   smallest change to ship the workflow. **Consequence:** SEO needs explicit
-  handling — dynamic `<head>` meta + a build/serverless **prerender** of public
-  routes + `sitemap.xml` (see doc 10). *If organic search becomes a primary
-  growth channel, revisit with an ADR proposing a Next.js (App Router + ISR)
-  migration of the public app — that is a v2 decision, not a v1 task.*
+  handling. **Gap-review correction:** SEO must be **runtime**, not build-time,
+  because content is published at runtime with no redeploy (the headline
+  promise). A build-time prerender/sitemap would go stale the moment the owner
+  publishes a new summary. Therefore v1 SEO = (a) dynamic `<head>` meta in the
+  SPA, (b) a **serverless bot-render/meta function** (`/api/og`-style) that
+  server-renders title/description/OG for crawler & social user-agents on
+  demand, and (c) a **runtime `sitemap.xml` serverless function** that reads the
+  DB on each request. Optionally also fire a Vercel **deploy hook** on publish if
+  static prerendering is later added. *Next.js (App Router + ISR) remains the
+  strategic v2 option behind a new ADR — not a v1 task.* (See doc 10.1.)
 - **ADR-005 — `key_ideas` and `body_paragraphs` stored as `jsonb` on the
   `summaries` row, not child tables.** Rationale: matches `data.js` shape, atomic
   publish, simplest editor binding. Trade-off: no per-idea FK querying (not
@@ -121,3 +128,29 @@ never touches production. See `11-environments-and-cicd.md`.
 - **ADR-007 — Arabic full-text search uses Postgres `simple` config + `unaccent`
   + trigram fallback.** Postgres ships no Arabic dictionary; `simple` tokenizes
   without stemming, `pg_trgm` covers partial matches. Documented in doc 03.
+- **ADR-008 — Summary slugs are admin-controlled Latin, with a transliterated
+  suggestion (gap review).** New summaries are authored with Arabic titles, but
+  URLs/SEO need stable Latin slugs (existing data uses `atomic-habits`). On
+  create, auto-suggest a slug by transliterating + normalizing the Arabic title
+  (lowercase, hyphenate, strip punctuation), ensure uniqueness (append `-2`…),
+  and let the admin edit it. If left blank, fall back to a short id-based slug.
+  Slugs are **immutable after first publish** (changing one breaks links/SEO);
+  the editor warns. (See doc 07.4.)
+- **ADR-009 — All contact-message inserts go through a verified Edge/serverless
+  function, never a direct anon insert (gap review).** Closes the Turnstile
+  bypass: the function verifies the token server-side and inserts with the
+  service role; `messages` has no anon insert policy. (See doc 04.3, 08.3.)
+- **ADR-010 — Categories are admin-managed, not a fixed seed (gap review).** A
+  "proper app" lets the owner grow the taxonomy. The admin gets a Categories
+  screen (CRUD + reorder). Deleting a category is **blocked while summaries
+  reference it** (FK `on delete restrict`); the UI offers reassignment first.
+  (See doc 07.8.)
+- **ADR-011 — `og:image` is generated for cover-less summaries (gap review).**
+  The 15 seeded summaries have no uploaded cover (only the CSS-generated one,
+  which isn't a real image URL). A serverless OG-image function renders a card
+  from `palette_key` + title/author so every shared link unfurls. Uploaded
+  covers take precedence. (See doc 10.8.)
+- **ADR-012 — The "new" badge is derived, not a manual flag (gap review).**
+  `is_new` is computed from `published_at` (within N days) at query time; the
+  `is_new` column is retained only as an optional manual override. Removes the
+  ambiguity of who toggles it. (See doc 03.3, 08.)

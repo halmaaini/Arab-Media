@@ -69,10 +69,17 @@ create policy summaries_admin_write on summaries for all
 > (security definer) — there is intentionally **no** public UPDATE policy on
 > `summaries`.
 
-### messages — anyone may INSERT (contact form); only admin may read/manage
+### messages — inserted ONLY via the verified Edge Function; admin reads/manages
+> **Defect fix (gap review):** a direct anon `INSERT` policy would let a bot
+> write straight to the inbox and bypass the Turnstile check entirely — the
+> captcha would be decorative. Therefore there is **no anon insert policy**.
+> All inserts go through the `submit-message` **Supabase Edge Function** (or a
+> Vercel serverless fn) which (1) verifies the Turnstile token server-side with
+> `TURNSTILE_SECRET_KEY`, (2) applies length/honeypot/rate-limit checks, then
+> (3) inserts using the **service role** (which bypasses RLS). A direct anon
+> insert from the browser is denied.
 ```sql
-create policy messages_anon_insert on messages for insert
-  with check (true);                        -- length CHECKs + app captcha guard abuse
+-- NO anon insert policy on purpose (see note above).
 create policy messages_admin_read  on messages for select using (is_admin());
 create policy messages_admin_update on messages for update
   using (is_admin()) with check (is_admin());

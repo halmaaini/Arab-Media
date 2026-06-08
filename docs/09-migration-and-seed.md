@@ -10,8 +10,14 @@ retire `data.js`. Sample `MESSAGES` go to dev/staging only.
 
 - Uses the **service-role** key (env `SUPABASE_SERVICE_ROLE_KEY`,
   `SUPABASE_URL`) — bypasses RLS for the one-off load. **Not** a `VITE_` var.
-- Imports the existing `src/data.js` (or a copied snapshot) to read
-  `CATEGORIES`, `BOOKS`, `OWNER`, the `P` palette map, and the contact constants.
+- Reads from a **committed snapshot** `supabase/seed/content.json` — generated
+  **once** from `src/data.js` (a tiny extract script), then committed. **Do not
+  import `src/data.js` at seed time** (gap review): `data.js` is deleted in P1-8,
+  so a seed that imports it would break on any later reseed. The snapshot makes
+  the seed self-contained and reproducible after `data.js` is gone. The snapshot
+  carries categories, summaries (with `key_ideas`/`body_paragraphs` already
+  renamed), the resolved `palette_key` per summary, owner/settings, and the
+  contact constants.
 - **Idempotent:** upsert on natural keys (`categories.id`, `summaries.slug`,
   `site_settings.id=1`) so re-running doesn't duplicate.
 - Order: extensions/schema migrations first (doc 11) → categories → site_settings

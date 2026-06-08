@@ -26,6 +26,14 @@
 - Use the **Supabase CLI**; commit `supabase/config.toml`.
 - Auth settings: **disable public sign-ups** (admin invited manually);
   email+password enabled; allowed redirect URLs = known domains only.
+- **First-admin bootstrap** (gap review): in each project, create the owner user
+  (Dashboard → Authentication → Add user, or invite email), then add the row
+  `insert into admins (user_id) values ('<that auth user id>');` via the SQL
+  editor (no client path exists — `admins` has no insert policy). Verify
+  `is_admin()` returns true when logged in as that user.
+- **Password recovery**: use Supabase's built-in email reset
+  (`auth.resetPasswordForEmail`) restricted to the admin's address; configure
+  the email template + redirect URL. No self-serve admin signup.
 - Storage: create `audio`, `covers` (+ optional `avatars`) buckets with the
   policies in doc 04.4 (as migrations, not hand-clicks, where possible).
 - Backups: enable automated backups on prod; document `pg_dump`/restore.

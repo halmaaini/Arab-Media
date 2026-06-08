@@ -241,13 +241,17 @@ create trigger trg_site_settings_updated before update on site_settings
 create or replace function summaries_tsv(s summaries)
 returns tsvector language sql immutable as $$
   select
-    setweight(to_tsvector('simple', unaccent(coalesce(s.title,''))), 'A') ||
-    setweight(to_tsvector('simple', unaccent(coalesce(s.author,''))), 'B') ||
-    setweight(to_tsvector('simple', unaccent(coalesce(s.teaser,''))), 'B') ||
-    setweight(to_tsvector('simple', unaccent(coalesce(array_to_string(
-       (select array_agg(value) from jsonb_array_elements_text(
-          (select jsonb_agg(p) from jsonb_array_elements_text(s.body_paragraphs) p)
-       )), ' '),''))), 'C');
+    setweight(to_tsvector('simple', unaccent(coalesce(s.title,  ''))), 'A') ||
+    setweight(to_tsvector('simple', unaccent(coalesce(s.author, ''))), 'B') ||
+    setweight(to_tsvector('simple', unaccent(coalesce(s.teaser, ''))), 'B') ||
+    -- key-idea titles (search must hit them; was previously omitted)
+    setweight(to_tsvector('simple', unaccent(coalesce(
+       (select string_agg(idea->>'title', ' ')
+          from jsonb_array_elements(s.key_ideas) as idea), ''))), 'B') ||
+    -- full body paragraphs
+    setweight(to_tsvector('simple', unaccent(coalesce(
+       (select string_agg(para, ' ')
+          from jsonb_array_elements_text(s.body_paragraphs) as para), ''))), 'C');
 $$;
 
 create or replace function summaries_tsv_trigger()

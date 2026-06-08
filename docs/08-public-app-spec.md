@@ -23,17 +23,29 @@ stays in `localStorage` (D3). No visitor auth anywhere.
 ## 8.2 Engagement (anonymous)
 - **Listens:** on a qualifying play, `recordListen(summary.id)` once per session
   (doc 05.10). The number shown on cards is the stored `listens`.
-- **Favorites:** toggle persists to `localStorage` (`mze_favs`) — unchanged.
-- **Progress / resume:** `localStorage` (`mze_progress`) keyed by slug — unchanged.
+- **Favorites:** toggle persists to `localStorage` (`mze_favs`). **Key by `slug`**
+  (gap review): in the prototype `book.id` *was* the slug; after migration
+  summaries have a uuid `id` + a `slug`, so favorites/progress must standardize
+  on **slug** to preserve existing users' saved data and stay human-stable. Audit
+  `store.jsx` so `toggleFav`/`isFav`/progress all use slug.
+- **Progress / resume:** `localStorage` (`mze_progress`) keyed by **slug**.
+- **Stale entries** (gap review): the `library` route hydrates favorites/progress
+  by fetching each slug; a slug that is now unpublished/deleted returns null —
+  **silently drop it** from the rendered list (and may prune it from localStorage).
+  Never render a broken card or throw.
 - **Theme & reader prefs:** `localStorage` — unchanged. Default theme/speed may
   seed from `site_settings.default_*` on first visit.
 
-## 8.3 Contact form (`contact`) — make it real
-Replace the toast-only `submit` with a real insert.
+## 8.3 Contact form (`contact`) — make it real (ADR-009)
+Replace the toast-only `submit`. **The insert must NOT happen directly from the
+browser** (that would bypass the captcha — gap review). Flow:
 1. Fields name/email/subject/body (all required — already in UI).
 2. Add **Cloudflare Turnstile** widget + hidden **honeypot** field (doc 04).
-3. On submit: client validation → `submitMessage({...,token})` which verifies
-   the token then inserts into `messages` (anon INSERT policy).
+3. On submit: client validation → `submitMessage({...,token})` calls the
+   **`submit-message` Edge/serverless function**, which verifies the Turnstile
+   token server-side (`TURNSTILE_SECRET_KEY`), runs honeypot/length/rate-limit
+   checks, then inserts the row using the **service role**. `messages` has **no
+   anon insert policy**, so a direct browser insert is denied.
 4. Success → keep the existing success state ("تم إرسال رسالتك، شكراً لك").
 5. Failure → inline Arabic error + allow retry; never lose typed content.
 6. The message appears in the admin inbox (doc 07.5) — this is the visitor→owner loop.
@@ -53,13 +65,15 @@ Replace the toast-only `submit` with a real insert.
   retry on error, `Empty` for no-results, dedicated 404 for unknown slug.
 - A top-level **error boundary** prevents a failed query from white-screening.
 
-## 8.6 SEO hooks (detail in doc 10)
+## 8.6 SEO hooks (detail in doc 10; ADR-004/011)
 - Each route sets a dynamic `<title>` + meta description; **detail** sets
-  per-summary `og:title/description/image` (cover URL) via a head manager
-  (e.g. `react-helmet-async`).
-- `sitemap.xml` lists all published summary slugs (generated at build or via a
-  serverless function reading the DB).
-- Prerender public routes so crawlers/social unfurlers get real HTML (ADR-004).
+  per-summary `og:title/description/image` via a head manager (e.g.
+  `react-helmet-async`). `og:image` = uploaded `cover_path` URL if present,
+  else the **generated OG-image function** (ADR-011) — never the CSS-only cover.
+- `sitemap.xml` is generated at **runtime** (serverless fn reading the DB), not
+  build time, so summaries published without a redeploy still appear (ADR-004).
+- A serverless **bot-render** function serves real HTML/meta to crawlers &
+  social unfurlers on demand (ADR-004) — no stale build-time prerender.
 
 ## 8.7 Behaviour parity to preserve (don't regress)
 - RTL throughout; Latin numerals; three-font system; light/dark themes; NowPlaying
