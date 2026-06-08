@@ -1,0 +1,32 @@
+name: CI
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      # Secret guard (docs/04.5, 11.6): no service-role key reachable from src/.
+      - name: Guard — no service-role secret under src/
+        run: |
+          if grep -rnE "SUPABASE_SERVICE_ROLE_KEY|service_role" src/; then
+            echo "::error::service-role reference found under src/ — must never be in the client bundle"; exit 1
+          fi
+          echo "ok: no service-role reference under src/"
+
+      # Post-cutover guard (docs/09.5): uncomment once src/data.js is deleted (ticket P1-8)
+      # - name: Guard — no data.js import under src/
+      #   run: |
+      #     if grep -rnE "from ['\"].*data\.js['\"]" src/; then
+      #       echo "::error::src/data.js is retired — fetch from the API instead"; exit 1
+      #     fi
