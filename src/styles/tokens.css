@@ -1,0 +1,118 @@
+/* ===== الموسوعة الذكية — Design Tokens ===== */
+/* Fonts: Aref Ruqaa (display), IBM Plex Sans Arabic (UI), Noto Naskh Arabic (reading) */
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand */
+  --ink:        #0E2A2E;
+  --ink-700:    #163A3D;
+  --ink-500:    #2A5B5C;
+  --gold:       #C99A3B;
+  --gold-soft:  #E7C77E;
+  --jade:       #2E8B6B;
+  --coral:      #D9694B;
+
+  /* Light surfaces (reading world) */
+  --paper:      #FAF5EC;
+  --surface:    #FFFDF8;
+  --surface-2:  #F2EADB;
+  --line:       #E3D9C6;
+  --text:       #15201F;
+  --text-muted: #5C6B68;
+  --text-faint: #92A09C;
+
+  /* Dark surfaces (listening world) */
+  --d-bg:       #081D1B;
+  --d-surface:  #0F2A27;
+  --d-surface-2:#143531;
+  --d-line:     #21433E;
+  --d-text:     #F2EDE1;
+  --d-muted:    #A9BEB7;
+
+  /* Effects */
+  --shadow-sm:  0 1px 2px rgba(14,42,46,.06), 0 2px 6px rgba(14,42,46,.05);
+  --shadow-md:  0 6px 20px rgba(14,42,46,.10);
+  --shadow-lg:  0 18px 48px rgba(14,42,46,.18);
+  --radius-card: 18px;
+  --radius-btn:  12px;
+  --radius-img:  14px;
+  --radius-pill: 999px;
+
+  /* Type roles */
+  --font-display: 'Aref Ruqaa', serif;
+  --font-ui: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-read: 'Noto Naskh Arabic', serif;
+
+  /* Spacing scale (4-based) */
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+  --s6: 24px; --s8: 32px; --s12: 48px; --s16: 64px;
+
+  /* App surface mapping (themeable) */
+  --bg: var(--paper);
+  --card: var(--surface);
+  --sunken: var(--surface-2);
+  --border: var(--line);
+  --fg: var(--text);
+  --muted: var(--text-muted);
+  --faint: var(--text-faint);
+}
+
+/* Dark theme = full "listening world" applied to whole app */
+[data-theme="dark"] {
+  --bg: var(--d-bg);
+  --card: var(--d-surface);
+  --sunken: var(--d-surface-2);
+  --border: var(--d-line);
+  --fg: var(--d-text);
+  --muted: var(--d-muted);
+  --faint: #7E938C;
+  --line: var(--d-line);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--fg);
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 700; line-height: 1.25; letter-spacing: 0; }
+p { margin: 0; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+ul, ol { margin: 0; }
+img { display: block; max-width: 100%; }
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+/* Latin digits everywhere (numerals decision: 1,2,3) — Arabic text, Latin numbers.
+   We force a font feature off and rely on JS to emit Latin glyphs; CSS keeps tabular figures for timers. */
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+/* Manuscript pattern (very low opacity geometric texture) */
+.pattern {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 22px, rgba(201,154,59,.05) 22px 23px),
+    repeating-linear-gradient(-45deg, transparent 0 22px, rgba(201,154,59,.05) 22px 23px);
+}
+
+/* Gold hairline */
+.hairline { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border: 0; opacity: .5; }
+
+/* Focus visibility */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+/* Scrollbars */
+.hscroll { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.hscroll::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
