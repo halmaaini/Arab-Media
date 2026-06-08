@@ -100,7 +100,7 @@ export function About() {
           </div>
         </div>
         <div className="value-stats">
-          {[['16', 'خلاصة منشورة'], ['9', 'مجالات معرفية'], ['100%', 'عربيّ، صوتاً ونصّاً']].map(([n, l]) => (
+          {[[String(BOOKS.length), 'خلاصة منشورة'], [String(CATEGORIES.length), 'مجالات معرفية'], ['100%', 'عربيّ، صوتاً ونصّاً']].map(([n, l]) => (
             <div key={l} className="vstat"><div className="vstat-n display tnum">{n}</div><div className="vstat-l">{l}</div></div>
           ))}
         </div>
