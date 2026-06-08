@@ -1,7 +1,7 @@
 /* ===== detail.jsx — Summary detail (listen + read) ===== */
 import { useState, useRef } from 'react';
 import { Icon, Cover, fmtTime, fmtDur, fmtNumFull, fmtDate, useLocal } from './utils.jsx';
-import { BOOKS, bookById, catName } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 import { SectionHead, Carousel } from './components.jsx';
 
@@ -47,6 +47,7 @@ function ReadingPanel({ book }) {
 
 export function Detail() {
   const { route, navigate, playBook, isFav, toggleFav, pushToast, trackId, playing, progress, chapterTime } = useApp();
+  const { books: BOOKS, bookById, catName } = useContent();
   const book = bookById(route.params.id) || BOOKS[0];
   const [tab, setTab] = useState('listen');
   const readRef = useRef();

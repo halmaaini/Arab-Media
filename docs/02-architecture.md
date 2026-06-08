@@ -154,3 +154,20 @@ never touches production. See `11-environments-and-cicd.md`.
   `is_new` is computed from `published_at` (within N days) at query time; the
   `is_new` column is retained only as an optional manual override. Removes the
   ambiguity of who toggles it. (See doc 03.3, 08.)
+- **ADR-013 — Ship a working PROTOTYPE on a local-storage adapter first;
+  Supabase is a later drop-in (owner decision).** Rationale: make the whole
+  workflow real and demonstrable now, with no backend to stand up. A
+  `ContentProvider` (`src/content.jsx`) holds the dataset (seeded once from
+  `supabase/seed/content.json` into `localStorage` via `src/lib/contentStore.js`)
+  and exposes the existing component "book" shape plus admin mutations
+  (create/edit/publish/delete, messages, settings) that persist locally. **This
+  IS the `src/api/*` seam** from doc 06, implemented locally: connecting Supabase
+  later means reimplementing the provider's reads/mutations against supabase-js
+  with no change to the consuming components. **Trade-off (by design):**
+  persistence is per-browser/per-device — it fully demonstrates the
+  author→publish→listen→contact→inbox loop on one device, but content the admin
+  adds is not shared with other visitors until the real backend is connected.
+  Audio/cover upload + the real `<audio>` engine remain a follow-up (the
+  prototype keeps the simulated player and generated covers). The migrations,
+  RLS, seed runner, and `.env.example` in `supabase/` are the forward path; they
+  are not wired into the prototype runtime.

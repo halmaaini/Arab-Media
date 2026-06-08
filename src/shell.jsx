@@ -1,7 +1,7 @@
 /* ===== shell.jsx — header, nav, footer, search, toasts ===== */
 import { useState, useEffect, useRef } from 'react';
 import { Icon, Cover } from './utils.jsx';
-import { BOOKS, CATEGORIES } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 
 export function ThemeToggle() {
@@ -16,6 +16,7 @@ export function ThemeToggle() {
 /* SmartSearch supports both controlled mode (value + onChange) and navigation mode */
 export function SmartSearch({ big, value: controlledValue, onChange: controlledChange }) {
   const { navigate, recent, setRecent } = useApp();
+  const { books: BOOKS, categories: CATEGORIES } = useContent();
   const isControlled = controlledChange !== undefined;
   const [internalQ, setInternalQ] = useState('');
   const q = isControlled ? (controlledValue || '') : internalQ;

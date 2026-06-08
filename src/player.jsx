@@ -1,7 +1,7 @@
 /* ===== player.jsx — mini player + Now Playing (dark) ===== */
 import { useState, useRef } from 'react';
 import { Icon, Cover, Equalizer, fmtTime, fmtDur } from './utils.jsx';
-import { catName } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 
 export function MiniPlayer() {
@@ -33,6 +33,7 @@ const SLEEPS = [15, 30, 45, 60];
 export function NowPlaying() {
   const { track, playing, togglePlay, position, duration, seek, setNpOpen, npOpen,
     speed, setSpeed, sleepMin, setSleepMin, isFav, toggleFav, chapterAt, chapterTime, navigate, pushToast } = useApp();
+  const { catName } = useContent();
   const [showSpeed, setShowSpeed] = useState(false);
   const [showSleep, setShowSleep] = useState(false);
   const barRef = useRef();

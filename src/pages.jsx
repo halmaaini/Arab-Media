@@ -1,13 +1,14 @@
 /* ===== pages.jsx — library, category, about, publisher, contact, more ===== */
 import { useState } from 'react';
 import { Icon, Cover, fmtDate } from './utils.jsx';
-import { BOOKS, CATEGORIES, OWNER, bookById, catById, catName, booksByCat, catCount } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, Empty, Field } from './components.jsx';
 import { ThemeToggle } from './shell.jsx';
 
 export function Library() {
   const { navigate, favorites, progress } = useApp();
+  const { books: BOOKS, bookById } = useContent();
   const [tab, setTab] = useState('continue');
   const continueBooks = BOOKS.filter(b => (progress[b.id] || 0) > 5 && (progress[b.id] || 0) < b.dur - 5)
     .sort((a, b) => (progress[b.id] || 0) - (progress[a.id] || 0));
@@ -36,6 +37,7 @@ export function Library() {
 
 export function Categories() {
   const { navigate } = useApp();
+  const { categories: CATEGORIES, booksByCat, catCount } = useContent();
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
@@ -45,9 +47,10 @@ export function Categories() {
       <div className="cat-grid">
         {CATEGORIES.map(c => {
           const sample = booksByCat(c.id)[0];
+          const pal = sample ? sample.palette : { bg: '#0E2A2E', bg2: '#163A3D', accent: '#C99A3B' };
           return (
             <div key={c.id} className="cat-tile" onClick={() => navigate('category', { id: c.id })}
-              style={{ '--cv-bg': sample.palette.bg, '--cv-bg2': sample.palette.bg2, '--cv-accent': sample.palette.accent }}>
+              style={{ '--cv-bg': pal.bg, '--cv-bg2': pal.bg2, '--cv-accent': pal.accent }}>
               <div className="cat-tile-pattern"></div>
               <div className="cat-tile-body">
                 <div className="cat-tile-count tnum">{catCount(c.id)} ملخّص</div>
@@ -64,6 +67,7 @@ export function Categories() {
 
 export function Category() {
   const { route, navigate } = useApp();
+  const { categories: CATEGORIES, catById, booksByCat } = useContent();
   const cat = catById(route.params.id) || CATEGORIES[0];
   const books = booksByCat(cat.id);
   return (
@@ -82,6 +86,7 @@ export function Category() {
 
 export function About() {
   const { navigate } = useApp();
+  const { books: BOOKS, categories: CATEGORIES } = useContent();
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
       <div className="editorial">
@@ -116,7 +121,16 @@ export function About() {
 
 export function Publisher() {
   const { navigate } = useApp();
-  const o = OWNER;
+  const { settings, derivedStats, bookById } = useContent();
+  const o = {
+    name: settings.publisher_name, role: settings.publisher_role,
+    titleLine: settings.publisher_title_line, location: settings.publisher_location,
+    bio: settings.publisher_bio || [], philosophy: settings.publisher_philosophy,
+  };
+  const stats = [
+    { n: String(derivedStats.summaries), l: 'خلاصة منشورة' },
+    { n: String(derivedStats.categories), l: 'مجالات معرفية' },
+  ];
   const humain = bookById('humain');
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
@@ -139,7 +153,7 @@ export function Publisher() {
       </div>
       <hr className="hairline" style={{ margin: '36px 0' }} />
       <div className="pub-stats">
-        {o.stats.map(s => <div key={s.l} className="vstat"><div className="vstat-n display tnum">{s.n}</div><div className="vstat-l">{s.l}</div></div>)}
+        {stats.map(s => <div key={s.l} className="vstat"><div className="vstat-n display tnum">{s.n}</div><div className="vstat-l">{s.l}</div></div>)}
       </div>
       <div className="pub-bio">
         {o.bio.map((p, i) => <p key={i}>{p}</p>)}
@@ -162,9 +176,10 @@ export function Publisher() {
 
 export function Contact() {
   const { pushToast } = useApp();
+  const { submitMessage, settings } = useContent();
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', body: '' });
-  const submit = (e) => { e.preventDefault(); setSent(true); pushToast('تم إرسال رسالتك، شكراً لك'); };
+  const submit = (e) => { e.preventDefault(); submitMessage(form); setSent(true); pushToast('تم إرسال رسالتك، شكراً لك'); };
   const upd = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
@@ -194,9 +209,9 @@ export function Contact() {
         </form>
         <aside className="contact-info">
           <h3 style={{ fontSize: 18, marginBottom: 16 }}>تواصل مباشر</h3>
-          <a className="contact-line"><span className="ci-ic"><Icon name="mail" size={18} /></span><span><b>البريد</b><br />hello@smart-encyclopedia.ar</span></a>
-          <a className="contact-line"><span className="ci-ic"><Icon name="phone" size={18} /></span><span><b>الهاتف</b><br /><span dir="ltr">+971 56 522 3700</span></span></a>
-          <a className="contact-line"><span className="ci-ic"><Icon name="pin" size={18} /></span><span><b>المقر</b><br />دبي، الإمارات العربية المتحدة</span></a>
+          <a className="contact-line"><span className="ci-ic"><Icon name="mail" size={18} /></span><span><b>البريد</b><br />{settings.contact_email}</span></a>
+          <a className="contact-line"><span className="ci-ic"><Icon name="phone" size={18} /></span><span><b>الهاتف</b><br /><span dir="ltr">{settings.contact_phone}</span></span></a>
+          <a className="contact-line"><span className="ci-ic"><Icon name="pin" size={18} /></span><span><b>المقر</b><br />{settings.contact_location}</span></a>
           <div className="social-row" style={{ marginTop: 22 }}>
             <a aria-label="تويتر"><Icon name="twitter" size={18} /></a>
             <a aria-label="لينكدإن"><Icon name="linkedin" size={18} /></a>

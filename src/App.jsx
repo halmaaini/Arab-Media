@@ -1,4 +1,5 @@
 /* ===== App.jsx — root router ===== */
+import { ContentProvider } from './content.jsx';
 import { AppProvider, useApp } from './store.jsx';
 import { Header, Footer, BottomNav, Toasts } from './shell.jsx';
 import { MiniPlayer, NowPlaying } from './player.jsx';
@@ -49,8 +50,10 @@ function Shell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <Shell />
-    </AppProvider>
+    <ContentProvider>
+      <AppProvider>
+        <Shell />
+      </AppProvider>
+    </ContentProvider>
   );
 }

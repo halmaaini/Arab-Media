@@ -1,12 +1,13 @@
 /* ===== home.jsx — Home / Library ===== */
 import { useState, useEffect } from 'react';
 import { Icon, Cover } from './utils.jsx';
-import { BOOKS, CATEGORIES, catName, catCount } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, SectionHead, Carousel, SkeletonGrid, ContinueCard } from './components.jsx';
 
 function Hero({ book }) {
   const { playBook, navigate } = useApp();
+  const { catName } = useContent();
   return (
     <div className="hero">
       <div className="hero-grid">
@@ -28,6 +29,7 @@ function Hero({ book }) {
 
 function CategoryPills() {
   const { navigate } = useApp();
+  const { categories: CATEGORIES, catCount } = useContent();
   return (
     <div className="hscroll"><div className="row" style={{ gap: 10, paddingBottom: 4 }}>
       {CATEGORIES.map(c => (
@@ -41,6 +43,7 @@ function CategoryPills() {
 
 export function Home() {
   const { navigate, progress } = useApp();
+  const { books: BOOKS } = useContent();
   const [loading, setLoading] = useState(true);
   useEffect(() => { const t = setTimeout(() => setLoading(false), 650); return () => clearTimeout(t); }, []);
   const featured = BOOKS.find(b => b.featured) || BOOKS[0];
@@ -51,7 +54,7 @@ export function Home() {
 
   return (
     <div className="container" style={{ paddingTop: 24 }}>
-      <Hero book={featured} />
+      {featured && <Hero book={featured} />}
 
       {continueBooks.length > 0 && (
         <section className="section">

@@ -1,7 +1,7 @@
 /* ===== browse.jsx — Browse / search / filters ===== */
 import { useState, useEffect } from 'react';
 import { Icon } from './utils.jsx';
-import { BOOKS, CATEGORIES } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, ListCard, SectionHead, Carousel } from './components.jsx';
 import { SmartSearch } from './shell.jsx';
@@ -18,6 +18,7 @@ const SORTS = [
 ];
 
 function FilterControls({ cats, setCats, tags, setTags, durs, setDurs, allTags }) {
+  const { categories: CATEGORIES } = useContent();
   const toggle = (arr, set, v) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
   return (
     <div className="stack" style={{ gap: 26 }}>
@@ -45,6 +46,7 @@ function FilterControls({ cats, setCats, tags, setTags, durs, setDurs, allTags }
 
 export function Browse() {
   const { route, navigate } = useApp();
+  const { books: BOOKS, categories: CATEGORIES } = useContent();
   const [q, setQ] = useState(route.params.q || '');
   const [cats, setCats] = useState(route.params.cat ? [route.params.cat] : []);
   const [tags, setTags] = useState([]);

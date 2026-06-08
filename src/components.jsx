@@ -1,7 +1,7 @@
 /* ===== components.jsx — shared cards & bits ===== */
 import { useState, useEffect } from 'react';
 import { Icon, Cover, Equalizer, Ring, fmtDur, fmtNum } from './utils.jsx';
-import { catName } from './data.js';
+import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
 
 export function BookCard({ book, showBadge = true }) {
@@ -30,6 +30,7 @@ export function BookCard({ book, showBadge = true }) {
 
 export function ListCard({ book, index }) {
   const { navigate } = useApp();
+  const { catName } = useContent();
   return (
     <div className="list-card" onClick={() => navigate('detail', { id: book.id })}>
       {index != null && <div className="display gold" style={{ fontSize: 22, width: 28, textAlign: 'center', flex: 'none' }}>{index}</div>}

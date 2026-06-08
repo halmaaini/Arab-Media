@@ -1,12 +1,14 @@
 /* ===== store.jsx — app context, router, player engine ===== */
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { useLocal } from './utils.jsx';
-import { bookById } from './data.js';
+import { useContent } from './content.jsx';
 
 const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
 
 export function AppProvider({ children }) {
+  const { bookById } = useContent();   // content lives in the surrounding ContentProvider
+
   // ---- routing ----
   const [route, setRoute] = useState({ view: 'home', params: {} });
   const navigate = useCallback((view, params = {}) => {
@@ -55,7 +57,7 @@ export function AppProvider({ children }) {
     setPosition(opts.from != null ? opts.from : (saved < b.dur - 5 ? saved : 0));
     setPlaying(true);
     if (opts.open) setNpOpen(true);
-  }, [trackId]);
+  }, [trackId, bookById]);
 
   const togglePlay = useCallback(() => setPlaying(p => !p), []);
   const seek = useCallback((sec) => setPosition(Math.max(0, Math.min(sec, duration))), [duration]);
