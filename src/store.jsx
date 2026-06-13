@@ -7,7 +7,7 @@ const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
 
 export function AppProvider({ children }) {
-  const { bookById } = useContent();   // content lives in the surrounding ContentProvider
+  const { bookById, incrementListens, settings } = useContent();   // content lives in the surrounding ContentProvider
 
   // ---- routing ----
   const [route, setRoute] = useState({ view: 'home', params: {} });
@@ -16,8 +16,8 @@ export function AppProvider({ children }) {
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
-  // ---- theme ----
-  const [theme, setTheme] = useLocal('theme', 'light');
+  // ---- theme ---- (first-visit default seeded from owner settings)
+  const [theme, setTheme] = useLocal('theme', settings.default_theme || 'light');
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -27,7 +27,7 @@ export function AppProvider({ children }) {
   const [favorites, setFavorites] = useLocal('favs', []);
   const [progress, setProgress] = useLocal('progress', {});
   const [recent, setRecent] = useLocal('recent', ['التفكير', 'جيمس كلير', 'علم النفس']);
-  const [speed, setSpeed] = useLocal('speed', 1);
+  const [speed, setSpeed] = useLocal('speed', settings.default_speed || 1);
 
   const toggleFav = useCallback((id) => {
     setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [id, ...f]);
@@ -41,6 +41,7 @@ export function AppProvider({ children }) {
   const [npOpen, setNpOpen] = useState(false);
   const [sleepMin, setSleepMin] = useState(0);
   const tickRef = useRef();
+  const countedRef = useRef(new Set());   // listens counted once per summary per session
   const track = trackId ? bookById(trackId) : null;
   const duration = track ? track.dur : 0;
 
@@ -53,11 +54,12 @@ export function AppProvider({ children }) {
     if (!b) return;
     if (trackId === id) { setPlaying(true); if (opts.open) setNpOpen(true); return; }
     setTrackId(id);
+    if (!countedRef.current.has(id)) { countedRef.current.add(id); incrementListens(id); }
     const saved = (progressRef.current || {})[id] || 0;
     setPosition(opts.from != null ? opts.from : (saved < b.dur - 5 ? saved : 0));
     setPlaying(true);
     if (opts.open) setNpOpen(true);
-  }, [trackId, bookById]);
+  }, [trackId, bookById, incrementListens]);
 
   const togglePlay = useCallback(() => setPlaying(p => !p), []);
   const seek = useCallback((sec) => setPosition(Math.max(0, Math.min(sec, duration))), [duration]);

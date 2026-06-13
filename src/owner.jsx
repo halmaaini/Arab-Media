@@ -76,7 +76,7 @@ function OwnerDash() {
     { l: 'رسائل جديدة', n: unreadCount, ic: 'inbox', sub: unreadCount ? 'بانتظار الردّ' : 'لا جديد' },
   ];
   const top = [...published].sort((a, b) => b.listens - a.listens).slice(0, 5);
-  const recent = [...allBooks].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 4);
+  const recent = [...allBooks].sort((a, b) => (b.createdAt || b.date || '').localeCompare(a.createdAt || a.date || '')).slice(0, 4);
   return (
     <OwnerShell active="owner-dash">
       <div className="owner-head">
@@ -132,7 +132,13 @@ function OwnerContent() {
   const rows = allBooks.filter(b =>
     (status === 'all' || b.status === status) && (!q || b.title.includes(q) || b.author.includes(q)));
   const del = (b) => { if (window.confirm('حذف «' + b.title + '»؟')) { deleteSummary(b.slug); pushToast('تم الحذف'); } };
-  const toggle = (b) => { setStatus(b.slug, b.status === 'published' ? 'draft' : 'published'); pushToast(b.status === 'published' ? 'حُوّل إلى مسودّة' : 'تم النشر'); };
+  const toggle = (b) => {
+    if (b.status !== 'published' && (!b.teaser || b.keyIdeas.length < 3 || b.fullText.length < 1)) {
+      pushToast('للنشر: وصف مختصر + 3 أفكار على الأقل + نص'); return;
+    }
+    setStatus(b.slug, b.status === 'published' ? 'draft' : 'published');
+    pushToast(b.status === 'published' ? 'حُوّل إلى مسودّة' : 'تم النشر');
+  };
   return (
     <OwnerShell active="owner-content">
       <div className="owner-head">

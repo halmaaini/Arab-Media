@@ -49,14 +49,19 @@ export const newId = () => 'loc-' + Math.random().toString(36).slice(2, 10);
  *  title is Latin, else derive from an id. (ADR-008 full rule lands with the
  *  real editor.) Ensures uniqueness against existing slugs. */
 export function makeSlug(title, existing) {
-  const base = (title || '')
-    .toLowerCase().trim()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/[^a-z0-9-]/g, '');           // drop non-ASCII (Arabic) → may be empty
-  let slug = base || newId();
+  // Drop non-ASCII (incl. Arabic) + punctuation FIRST, so an Arabic-only title
+  // collapses to '' and falls back to a stable id (not a string of hyphens).
+  let base = (title || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  if (!base) base = newId();
+  let slug = base;
   let n = 2;
   const taken = new Set(existing || []);
-  while (taken.has(slug)) slug = `${base || 'summary'}-${n++}`;
+  while (taken.has(slug)) slug = `${base}-${n++}`;
   return slug;
 }

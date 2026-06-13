@@ -17,6 +17,14 @@ import { DEFAULT_CONTENT } from './lib/siteContent.js';
 const Ctx = createContext(null);
 export const useContent = () => useContext(Ctx);
 
+/* "جديد" is derived, not a permanent flag (ADR-012): published within N days. */
+const NEW_WINDOW_MS = 21 * 24 * 60 * 60 * 1000;
+function isRecent(iso) {
+  if (!iso) return false;
+  const t = new Date(iso).getTime();
+  return !Number.isNaN(t) && (Date.now() - t) < NEW_WINDOW_MS;
+}
+
 /* canonical summary (store shape) -> component shape (the old data.js `book`) */
 function toBook(s) {
   return {
@@ -37,8 +45,9 @@ function toBook(s) {
     listens: s.listens || 0,
     date: s.published_at,
     featured: !!s.featured,
-    isNew: !!s.is_new,
+    isNew: s.status === 'published' && isRecent(s.published_at),
     status: s.status,
+    createdAt: s.created_at || s.published_at || null,
   };
 }
 
@@ -110,6 +119,7 @@ export function ContentProvider({ children }) {
       is_new: true,
       status: f.status || 'draft',
       published_at: f.status === 'published' ? now : null,
+      created_at: now,
     };
     commit((d) => ({ ...d, summaries: [row, ...d.summaries] }));
     return slug;
