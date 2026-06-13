@@ -108,11 +108,11 @@ export function AppProvider({ children }) {
 
   // chapter helpers
   const chapterAt = useCallback((b, pos) => {
-    if (!b) return 0;
+    if (!b || !b.keyIdeas.length) return 0;
     const n = b.keyIdeas.length, seg = b.dur / n;
-    return Math.min(n - 1, Math.floor(pos / seg));
+    return Math.max(0, Math.min(n - 1, Math.floor(pos / seg)));
   }, []);
-  const chapterTime = useCallback((b, idx) => (b.dur / b.keyIdeas.length) * idx, []);
+  const chapterTime = useCallback((b, idx) => (b && b.keyIdeas.length) ? (b.dur / b.keyIdeas.length) * idx : 0, []);
 
   const val = {
     route, navigate,

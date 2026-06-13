@@ -51,6 +51,12 @@ export function Detail() {
   const book = bookById(route.params.id) || BOOKS[0];
   const [tab, setTab] = useState('listen');
   const readRef = useRef();
+  if (!book) return (
+    <div className="container" style={{ paddingTop: 24 }}>
+      <button className="back-link" onClick={() => navigate('browse')}><Icon name="chevR" size={18} /> رجوع</button>
+      <div className="empty"><div className="e-ico"><Icon name="search" /></div><h3>الملخّص غير موجود</h3><p>قد يكون حُذف أو لم يُنشر بعد.</p><button className="btn btn-primary" onClick={() => navigate('browse')}>تصفّح الملخّصات</button></div>
+    </div>
+  );
   const isThis = trackId === book.id;
   const pos = progress[book.id] || 0;
   const pctRead = Math.min(1, pos / book.dur);

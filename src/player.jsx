@@ -65,10 +65,12 @@ export function NowPlaying() {
           <div className="np-author">{track.author}</div>
         </div>
 
-        <div className="np-current">
-          <span className="eyebrow gold">الفكرة {curCh + 1} من {track.keyIdeas.length}</span>
-          <div className="np-chtitle">{track.keyIdeas[curCh].t}</div>
-        </div>
+        {track.keyIdeas.length > 0 && (
+          <div className="np-current">
+            <span className="eyebrow gold">الفكرة {curCh + 1} من {track.keyIdeas.length}</span>
+            <div className="np-chtitle">{track.keyIdeas[curCh]?.t}</div>
+          </div>
+        )}
 
         {/* scrubber */}
         <div className="np-scrub">
