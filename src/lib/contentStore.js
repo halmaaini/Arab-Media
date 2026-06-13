@@ -18,6 +18,7 @@ function seedData() {
     summaries: seed.summaries.map((s) => ({ ...s })),
     messages: [],                      // sample messages are dev-only; start empty
     settings: { ...seed.site_settings },
+    contentOverrides: {},              // editable page copy (CMS); merged over DEFAULT_CONTENT
   };
 }
 

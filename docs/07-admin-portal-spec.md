@@ -122,3 +122,18 @@ let the owner grow the taxonomy.
   via SQL (no client path). Password reset uses Supabase's email recovery flow;
   document the steps in `11-environments-and-cicd.md`. There is no self-serve
   admin sign-up.
+
+## 7.9 Page content / copy (CMS) — `owner-pages`
+Edits the **marketing/editorial copy** of the public pages (hero eyebrow, section
+titles, About editorial, Categories/Browse/Library subtitles, Contact intro,
+footer blurb, brand tagline) — NOT layout/structure, so the designed RTL pages
+can't be broken. Driven by a keyed dictionary `content[page][key]` with shipped
+defaults deep-merged under admin overrides (so new copy keys still appear).
+- Prototype: implemented in `src/lib/siteContent.js` (`DEFAULT_CONTENT` +
+  `CONTENT_SCHEMA`) and `src/content.jsx` (`content` + `updatePageContent`);
+  persists in localStorage; the screen iterates `CONTENT_SCHEMA` to render
+  grouped, labeled fields.
+- Supabase target: a singleton `site_content` row (one `jsonb` column holding the
+  overrides), public-readable, admin-writable — same shape/policies as
+  `site_settings` (doc 03/04). Reads merge defaults ⊕ stored, like the prototype.
+- Numbers stay derived (About stats); only the labels/copy are editable.

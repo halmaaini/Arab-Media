@@ -46,7 +46,7 @@ function FilterControls({ cats, setCats, tags, setTags, durs, setDurs, allTags }
 
 export function Browse() {
   const { route, navigate } = useApp();
-  const { books: BOOKS, categories: CATEGORIES } = useContent();
+  const { books: BOOKS, categories: CATEGORIES, content } = useContent();
   const [q, setQ] = useState(route.params.q || '');
   const [cats, setCats] = useState(route.params.cat ? [route.params.cat] : []);
   const [tags, setTags] = useState([]);
@@ -90,8 +90,8 @@ export function Browse() {
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">استكشاف</h1>
-        <p className="page-sub">ابحث في العناوين والمؤلّفين والوسوم — وحتّى داخل نصوص الملخّصات نفسها.</p>
+        <h1 className="page-title">{content.browse.title}</h1>
+        <p className="page-sub">{content.browse.subtitle}</p>
       </div>
 
       {/* Controlled search bar — reflects current q and updates it directly */}

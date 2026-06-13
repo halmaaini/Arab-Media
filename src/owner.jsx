@@ -6,6 +6,7 @@ import { useApp } from './store.jsx';
 import { Field } from './components.jsx';
 import { paletteOf, PALETTE_KEYS } from './lib/palettes.js';
 import { makeSlug } from './lib/contentStore.js';
+import { CONTENT_SCHEMA } from './lib/siteContent.js';
 
 function OwnerLogin() {
   const { navigate } = useApp();
@@ -35,6 +36,7 @@ function OwnerShell({ active, children }) {
     { v: 'owner-dash', l: 'لوحة التحكم', ic: 'chart' },
     { v: 'owner-content', l: 'المحتوى', ic: 'book' },
     { v: 'owner-edit', l: 'إضافة ملخّص', ic: 'plus' },
+    { v: 'owner-pages', l: 'محتوى الصفحات', ic: 'text' },
     { v: 'owner-messages', l: 'الرسائل', ic: 'inbox' },
     { v: 'owner-settings', l: 'الإعدادات', ic: 'settings' },
   ];
@@ -423,4 +425,30 @@ function OwnerSettings() {
   );
 }
 
-export { OwnerLogin, OwnerDash, OwnerContent, OwnerEdit, OwnerMessages, OwnerSettings };
+function OwnerPages() {
+  const { content, updatePageContent } = useContent();
+  const { pushToast } = useApp();
+  return (
+    <OwnerShell active="owner-pages">
+      <div className="owner-head">
+        <div><h1 className="owner-h1">محتوى الصفحات</h1><p className="muted">عدّل نصوص الصفحات — تظهر مباشرة على الموقع.</p></div>
+        <button className="btn btn-primary" onClick={() => pushToast('حُفظ المحتوى')}>تمّ الحفظ</button>
+      </div>
+      <div className="settings-grid">
+        {CONTENT_SCHEMA.map(group => (
+          <SettingGroup key={group.page} icon="text" title={group.label} desc="نصوص هذا القسم">
+            {group.fields.map(f => (
+              <Field key={f.key} label={f.label}>
+                {f.multiline
+                  ? <textarea rows="3" value={content[group.page][f.key] || ''} onChange={e => updatePageContent(group.page, f.key, e.target.value)} />
+                  : <input value={content[group.page][f.key] || ''} onChange={e => updatePageContent(group.page, f.key, e.target.value)} />}
+              </Field>
+            ))}
+          </SettingGroup>
+        ))}
+      </div>
+    </OwnerShell>
+  );
+}
+
+export { OwnerLogin, OwnerDash, OwnerContent, OwnerEdit, OwnerMessages, OwnerSettings, OwnerPages };

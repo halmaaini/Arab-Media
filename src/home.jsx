@@ -7,13 +7,13 @@ import { BookCard, SectionHead, Carousel, SkeletonGrid, ContinueCard } from './c
 
 function Hero({ book }) {
   const { playBook, navigate } = useApp();
-  const { catName } = useContent();
+  const { catName, content } = useContent();
   return (
     <div className="hero">
       <div className="hero-grid">
-        <div className="cover-wrap"><Cover book={book} foot="ملخّص الأسبوع" /></div>
+        <div className="cover-wrap"><Cover book={book} foot={content.home.heroFoot} /></div>
         <div className="hero-body">
-          <span className="eyebrow"><Icon name="star" size={14} fill="currentColor" style={{ verticalAlign: '-2px', marginInlineEnd: 4 }} />ملخّص مميّز</span>
+          <span className="eyebrow"><Icon name="star" size={14} fill="currentColor" style={{ verticalAlign: '-2px', marginInlineEnd: 4 }} />{content.home.heroEyebrow}</span>
           <h1 className="hero-title">{book.title}</h1>
           <div className="hero-author">{book.author} · {catName(book.cat)}</div>
           <p className="hero-teaser">{book.teaser}</p>
@@ -43,7 +43,7 @@ function CategoryPills() {
 
 export function Home() {
   const { navigate, progress } = useApp();
-  const { books: BOOKS } = useContent();
+  const { books: BOOKS, content } = useContent();
   const [loading, setLoading] = useState(true);
   useEffect(() => { const t = setTimeout(() => setLoading(false), 650); return () => clearTimeout(t); }, []);
   const featured = BOOKS.find(b => b.featured) || BOOKS[0];
@@ -58,28 +58,28 @@ export function Home() {
 
       {continueBooks.length > 0 && (
         <section className="section">
-          <SectionHead title="تابِع الاستماع" onMore={() => navigate('library')} moreLabel="مكتبتي" />
+          <SectionHead title={content.home.secContinue} onMore={() => navigate('library')} moreLabel="مكتبتي" />
           <div className="hscroll"><div className="carousel" style={{ gap: 14 }}>{continueBooks.map(b => <ContinueCard key={b.id} book={b} />)}</div></div>
         </section>
       )}
 
       <section className="section">
-        <SectionHead title="تصفّح حسب التصنيف" onMore={() => navigate('categories')} />
+        <SectionHead title={content.home.secCategories} onMore={() => navigate('categories')} />
         <CategoryPills />
       </section>
 
       <section className="section">
-        <SectionHead title="أحدث الملخّصات" onMore={() => navigate('browse', { sort: 'new' })} />
+        <SectionHead title={content.home.secNewest} onMore={() => navigate('browse', { sort: 'new' })} />
         {loading ? <SkeletonGrid n={5} /> : <Carousel books={newest} />}
       </section>
 
       <section className="section">
-        <SectionHead title="الأكثر استماعاً" onMore={() => navigate('browse', { sort: 'listens' })} />
+        <SectionHead title={content.home.secMost} onMore={() => navigate('browse', { sort: 'listens' })} />
         {loading ? <SkeletonGrid n={5} /> : <Carousel books={mostListened} />}
       </section>
 
       <section className="section">
-        <SectionHead title="المكتبة الكاملة" onMore={() => navigate('browse')} />
+        <SectionHead title={content.home.secAll} onMore={() => navigate('browse')} />
         {loading ? <SkeletonGrid n={10} /> : (
           <div className="book-grid">{BOOKS.map(b => <BookCard key={b.id} book={b} />)}</div>
         )}

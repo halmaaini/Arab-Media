@@ -7,7 +7,7 @@ import { Home } from './home.jsx';
 import { Browse } from './browse.jsx';
 import { Detail } from './detail.jsx';
 import { Library, Categories, Category, About, Publisher, Contact, More } from './pages.jsx';
-import { OwnerLogin, OwnerDash, OwnerContent, OwnerEdit, OwnerMessages, OwnerSettings } from './owner.jsx';
+import { OwnerLogin, OwnerDash, OwnerContent, OwnerEdit, OwnerMessages, OwnerSettings, OwnerPages } from './owner.jsx';
 
 const PUBLIC = {
   home: Home, browse: Browse, detail: Detail, library: Library,
@@ -18,6 +18,7 @@ const PUBLIC = {
 const OWNER_VIEWS = {
   'owner-login': OwnerLogin, 'owner-dash': OwnerDash, 'owner-content': OwnerContent,
   'owner-edit': OwnerEdit, 'owner-messages': OwnerMessages, 'owner-settings': OwnerSettings,
+  'owner-pages': OwnerPages,
 };
 
 function Shell() {

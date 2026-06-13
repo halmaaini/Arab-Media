@@ -12,6 +12,7 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { loadData, persist, newId, makeSlug } from './lib/contentStore.js';
 import { paletteOf } from './lib/palettes.js';
+import { DEFAULT_CONTENT } from './lib/siteContent.js';
 
 const Ctx = createContext(null);
 export const useContent = () => useContext(Ctx);
@@ -177,14 +178,28 @@ export function ContentProvider({ children }) {
     commit((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
   }, [commit]);
 
+  // ---- editable page copy (CMS): DEFAULT_CONTENT ⊕ stored overrides ----
+  const content = useMemo(() => {
+    const ov = data.contentOverrides || {};
+    const merged = {};
+    for (const page of Object.keys(DEFAULT_CONTENT)) merged[page] = { ...DEFAULT_CONTENT[page], ...(ov[page] || {}) };
+    return merged;
+  }, [data.contentOverrides]);
+  const updatePageContent = useCallback((page, key, val) => {
+    commit((d) => {
+      const ov = d.contentOverrides || {};
+      return { ...d, contentOverrides: { ...ov, [page]: { ...(ov[page] || {}), [key]: val } } };
+    });
+  }, [commit]);
+
   const value = {
     // public/shared reads
     books, allBooks, bookById, booksByCat, categories, catById, catName, catCount,
-    messages, unreadCount, settings, derivedStats,
+    messages, unreadCount, settings, derivedStats, content,
     // admin mutations
     createSummary, updateSummary, setStatus, setFeatured, deleteSummary, incrementListens,
     upsertCategory, deleteCategory,
-    submitMessage, setMessageStatus, deleteMessage, updateSettings,
+    submitMessage, setMessageStatus, deleteMessage, updateSettings, updatePageContent,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -8,7 +8,7 @@ import { ThemeToggle } from './shell.jsx';
 
 export function Library() {
   const { navigate, favorites, progress } = useApp();
-  const { books: BOOKS, bookById } = useContent();
+  const { books: BOOKS, bookById, content } = useContent();
   const [tab, setTab] = useState('continue');
   const continueBooks = BOOKS.filter(b => (progress[b.id] || 0) > 5 && (progress[b.id] || 0) < b.dur - 5)
     .sort((a, b) => (progress[b.id] || 0) - (progress[a.id] || 0));
@@ -17,8 +17,8 @@ export function Library() {
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">مكتبتي</h1>
-        <p className="page-sub">محفوظة على هذا الجهاز — لا حاجة لتسجيل الدخول.</p>
+        <h1 className="page-title">{content.library.title}</h1>
+        <p className="page-sub">{content.library.subtitle}</p>
       </div>
       <div className="detail-tabs" style={{ marginTop: 0 }}>
         <button className={tab === 'continue' ? 'on' : ''} onClick={() => setTab('continue')}>تابِع الاستماع</button>
@@ -37,12 +37,12 @@ export function Library() {
 
 export function Categories() {
   const { navigate } = useApp();
-  const { categories: CATEGORIES, booksByCat, catCount } = useContent();
+  const { categories: CATEGORIES, booksByCat, catCount, content } = useContent();
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">التصنيفات</h1>
-        <p className="page-sub">تسعة مجالات معرفية — اختر شغفك وابدأ الرحلة.</p>
+        <h1 className="page-title">{content.categories.title}</h1>
+        <p className="page-sub">{content.categories.subtitle}</p>
       </div>
       <div className="cat-grid">
         {CATEGORIES.map(c => {
@@ -86,33 +86,34 @@ export function Category() {
 
 export function About() {
   const { navigate } = useApp();
-  const { books: BOOKS, categories: CATEGORIES } = useContent();
+  const { books: BOOKS, categories: CATEGORIES, content } = useContent();
+  const c = content.about;
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
       <div className="editorial">
-        <span className="eyebrow center">من نحن</span>
-        <h1 className="editorial-title">المعرفة حقٌّ للجميع، والوقت لا ينتظر أحداً.</h1>
-        <p className="editorial-lead">الموسوعة الذكية منصّة عربية تُحوّل أهمّ الكتب إلى خلاصاتٍ مسموعة ومقروءة، تصل إليك أينما كنت — في طريقك، في تمرينك، أو في لحظة هدوء قبل النوم.</p>
+        <span className="eyebrow center">{c.eyebrow}</span>
+        <h1 className="editorial-title">{c.title}</h1>
+        <p className="editorial-lead">{c.lead}</p>
         <hr className="hairline" style={{ margin: '36px 0' }} />
         <div className="editorial-cols">
           <div>
-            <h3 className="gold-h">ما «الخلاصة» عندنا؟</h3>
-            <p>ليست اختصاراً يُغنيك عن الكتاب، بل بوّابةٌ إليه. نلتقط الأفكار الجوهرية ونقدّمها بصوتٍ واضح ونصٍّ مُتقن، لتقرّر بنفسك أيّ الكتب يستحقّ رحلةً كاملة.</p>
+            <h3 className="gold-h">{c.col1Title}</h3>
+            <p>{c.col1Body}</p>
           </div>
           <div>
-            <h3 className="gold-h">لمن نصنع هذا؟</h3>
-            <p>لكلّ فضوليّ لا يجد وقتاً كافياً؛ للطالب، والمهنيّ، والأمّ، والباحث عن المعنى. لكلّ من يؤمن أن خمس عشرة دقيقة واعية قد تغيّر زاوية نظره للعالم.</p>
+            <h3 className="gold-h">{c.col2Title}</h3>
+            <p>{c.col2Body}</p>
           </div>
         </div>
         <div className="value-stats">
-          {[[String(BOOKS.length), 'خلاصة منشورة'], [String(CATEGORIES.length), 'مجالات معرفية'], ['100%', 'عربيّ، صوتاً ونصّاً']].map(([n, l]) => (
+          {[[String(BOOKS.length), c.stat1Label], [String(CATEGORIES.length), c.stat2Label], [c.stat3Value, c.stat3Label]].map(([n, l]) => (
             <div key={l} className="vstat"><div className="vstat-n display tnum">{n}</div><div className="vstat-l">{l}</div></div>
           ))}
         </div>
         <hr className="hairline" style={{ margin: '36px 0' }} />
-        <blockquote className="pullquote">«نحن لا نبيع اختصاراً للوقت، بل نُشعل شغفاً بالمعرفة.»</blockquote>
+        <blockquote className="pullquote">«{c.pullQuote}»</blockquote>
         <div className="center" style={{ marginTop: 32 }}>
-          <button className="btn btn-primary btn-lg" onClick={() => navigate('browse')}>ابدأ الاستماع</button>
+          <button className="btn btn-primary btn-lg" onClick={() => navigate('browse')}>{c.cta}</button>
         </div>
       </div>
     </div>
@@ -176,7 +177,7 @@ export function Publisher() {
 
 export function Contact() {
   const { pushToast } = useApp();
-  const { submitMessage, settings } = useContent();
+  const { submitMessage, settings, content } = useContent();
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', body: '' });
   const submit = (e) => { e.preventDefault(); submitMessage(form); setSent(true); pushToast('تم إرسال رسالتك، شكراً لك'); };
@@ -184,9 +185,9 @@ export function Contact() {
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
       <div className="page-head center">
-        <span className="eyebrow">اتصل بنا</span>
-        <h1 className="page-title">يسعدنا أن نسمع منك</h1>
-        <p className="page-sub" style={{ margin: '8px auto 0' }}>اقتراح كتاب، ملاحظة، أو فرصة تعاون — صندوقنا مفتوح دائماً.</p>
+        <span className="eyebrow">{content.contact.eyebrow}</span>
+        <h1 className="page-title">{content.contact.title}</h1>
+        <p className="page-sub" style={{ margin: '8px auto 0' }}>{content.contact.subtitle}</p>
       </div>
       <div className="contact-grid">
         <form className="card contact-form" onSubmit={submit}>
