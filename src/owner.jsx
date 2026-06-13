@@ -1,5 +1,5 @@
 /* ===== owner.jsx — owner portal (functional, local persistence) ===== */
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Icon, Cover, fmtDur, fmtNumFull, fmtDate } from './utils.jsx';
 import { useContent } from './content.jsx';
 import { useApp } from './store.jsx';
@@ -7,6 +7,7 @@ import { Field } from './components.jsx';
 import { paletteOf, PALETTE_KEYS } from './lib/palettes.js';
 import { makeSlug } from './lib/contentStore.js';
 import { CONTENT_SCHEMA } from './lib/siteContent.js';
+import { putAudio } from './lib/mediaStore.js';
 
 function OwnerLogin() {
   const { navigate } = useApp();
@@ -193,6 +194,21 @@ function OwnerEdit() {
     palette_key: editing.palette_key || 'ink', status: editing.status || 'published', featured: editing.featured,
   } : { title: '', author: '', cat: categories[0]?.id || 'self', tags: [], teaser: '', body: '', ideas: [{ t: '', x: '' }], palette_key: 'ink', status: 'draft', featured: false });
   const [tagInput, setTagInput] = useState('');
+  const [audioFile, setAudioFile] = useState(null);
+  const [audioMeta, setAudioMeta] = useState(null);   // { name, duration } for a pending upload
+  const fileRef = useRef(null);
+  const onAudioPick = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/\.(mp3|m4a)$/i.test(file.name) && !/^audio\//.test(file.type)) { pushToast('صيغة غير مدعومة — MP3 أو M4A'); return; }
+    if (file.size > 200 * 1024 * 1024) { pushToast('الملف أكبر من 200 ميغابايت'); return; }
+    setAudioFile(file);
+    const url = URL.createObjectURL(file);
+    const a = new Audio();
+    a.onloadedmetadata = () => { setAudioMeta({ name: file.name, duration: Math.round(a.duration || 0) }); try { URL.revokeObjectURL(url); } catch {} };
+    a.onerror = () => setAudioMeta({ name: file.name, duration: 0 });
+    a.src = url;
+  };
   const upd = (k, v) => setF(s => ({ ...s, [k]: v }));
   const addTag = () => { const t = tagInput.trim(); if (t && !f.tags.includes(t)) { upd('tags', [...f.tags, t]); setTagInput(''); } };
   const setIdea = (i, key, v) => upd('ideas', f.ideas.map((x, j) => j === i ? { ...x, [key]: v } : x));
@@ -202,21 +218,29 @@ function OwnerEdit() {
   const preview = paletteOf(f.palette_key);
   const previewBook = { title: f.title || 'عنوان الملخّص', author: f.author || 'المؤلّف', palette: preview };
 
-  const save = () => {
+  const save = async () => {
     if (!f.title.trim()) { pushToast('العنوان مطلوب'); return; }
     const key_ideas = f.ideas.map(i => ({ title: i.t.trim(), body: i.x.trim() })).filter(k => k.title);
     const body_paragraphs = f.body.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
     if (f.status === 'published' && (!f.teaser.trim() || key_ideas.length < 3 || body_paragraphs.length < 1)) {
       pushToast('للنشر: وصف مختصر + 3 أفكار على الأقل + نص'); return;
     }
+    const uploadedDur = audioFile && audioMeta && audioMeta.duration;
     const canonical = {
       title: f.title.trim(), author: f.author.trim(), category_id: f.cat, tags: f.tags,
       teaser: f.teaser.trim(), key_ideas, body_paragraphs, palette_key: f.palette_key,
       featured: f.featured, status: f.status,
-      audio_duration_seconds: editing?.dur || Math.max(300, key_ideas.length * 150),
+      audio_duration_seconds: uploadedDur || editing?.dur || Math.max(300, key_ideas.length * 150),
     };
-    if (editing) updateSummary(editing.slug, canonical);
-    else createSummary(canonical);
+    let slug;
+    if (editing) { updateSummary(editing.slug, canonical); slug = editing.slug; }
+    else { slug = createSummary(canonical); }
+    if (audioFile) {
+      try {
+        await putAudio(slug, audioFile);
+        updateSummary(slug, { audio_path: 'idb:' + slug, audio_duration_seconds: canonical.audio_duration_seconds });
+      } catch { pushToast('تعذّر حفظ الملف الصوتي'); }
+    }
     pushToast(f.status === 'published' ? 'تم نشر الملخّص' : 'حُفظت المسودّة');
     navigate('owner-content');
   };
@@ -238,11 +262,27 @@ function OwnerEdit() {
         <div className="stack" style={{ gap: 20 }}>
           <div className="card edit-card">
             <h3 className="edit-h">الملف الصوتي</h3>
-            <div className="dropzone">
+            <input ref={fileRef} type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,.mp3,.m4a" style={{ display: 'none' }} onChange={onAudioPick} />
+            <div className="dropzone" onClick={() => fileRef.current && fileRef.current.click()} style={{ cursor: 'pointer' }}>
               <Icon name="upload" size={28} className="gold" />
-              <div style={{ fontWeight: 600, marginTop: 8 }}>رفع الصوت يتفعّل مع ربط الخادم</div>
-              <div className="faint" style={{ fontSize: 13 }}>MP3 أو M4A — حتى 200MB (في النموذج الحالي يُعرض كـ«قيد الإعداد»)</div>
+              {audioFile ? (
+                <>
+                  <div style={{ fontWeight: 600, marginTop: 8 }}>{audioMeta?.name || 'ملف صوتي'}</div>
+                  <div className="faint" style={{ fontSize: 13 }}>{audioMeta?.duration ? fmtDur(audioMeta.duration) : '…'} · اضغط للاستبدال</div>
+                </>
+              ) : editing && editing.audioPath ? (
+                <>
+                  <div style={{ fontWeight: 600, marginTop: 8 }}>ملف صوتي محفوظ</div>
+                  <div className="faint" style={{ fontSize: 13 }}>{fmtDur(editing.dur)} · اضغط للاستبدال</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontWeight: 600, marginTop: 8 }}>اضغط لاختيار ملف صوتي</div>
+                  <div className="faint" style={{ fontSize: 13 }}>MP3 أو M4A — حتى 200MB · يُشغَّل فعلياً على هذا الجهاز</div>
+                </>
+              )}
             </div>
+            {audioFile && <button className="btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={() => { setAudioFile(null); setAudioMeta(null); if (fileRef.current) fileRef.current.value = ''; }}>إزالة الاختيار</button>}
           </div>
 
           <div className="card edit-card">

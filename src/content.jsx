@@ -13,6 +13,7 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
 import { loadData, persist, newId, makeSlug } from './lib/contentStore.js';
 import { paletteOf } from './lib/palettes.js';
 import { DEFAULT_CONTENT } from './lib/siteContent.js';
+import { deleteAudio } from './lib/mediaStore.js';
 
 const Ctx = createContext(null);
 export const useContent = () => useContext(Ctx);
@@ -140,6 +141,7 @@ export function ContentProvider({ children }) {
   const setStatus = useCallback((slug, status) => updateSummary(slug, { status }), [updateSummary]);
   const setFeatured = useCallback((slug, val) => updateSummary(slug, { featured: !!val }), [updateSummary]);
   const deleteSummary = useCallback((slug) => {
+    deleteAudio(slug);   // remove the stored audio blob too (fire-and-forget)
     commit((d) => ({ ...d, summaries: d.summaries.filter((s) => s.slug !== slug) }));
   }, [commit]);
 
