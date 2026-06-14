@@ -139,14 +139,14 @@ export function Footer() {
           </div>
         </div>
         <div>
-          <h4>استكشف</h4>
+          <Editable page="brand" k="footerColExplore" as="h4" />
           <a onClick={() => navigate('home')}>الرئيسية</a>
           <a onClick={() => navigate('browse')}>كل الملخّصات</a>
           <a onClick={() => navigate('categories')}>التصنيفات</a>
           <a onClick={() => navigate('library')}>مكتبتي</a>
         </div>
         <div>
-          <h4>المنصّة</h4>
+          <Editable page="brand" k="footerColPlatform" as="h4" />
           <a onClick={() => navigate('about')}>من نحن</a>
           <a onClick={() => navigate('publisher')}>عن الناشر</a>
           <a onClick={() => navigate('contact')}>اتصل بنا</a>

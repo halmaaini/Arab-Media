@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Icon, Cover, fmtDate } from './utils.jsx';
 import { useContent } from './content.jsx';
-import { Editable } from './edit.jsx';
+import { Editable, EditableText } from './edit.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, Empty, Field } from './components.jsx';
 import { ThemeToggle } from './shell.jsx';
@@ -123,7 +123,7 @@ export function About() {
 
 export function Publisher() {
   const { navigate } = useApp();
-  const { settings, derivedStats, bookById } = useContent();
+  const { settings, derivedStats, bookById, updateSettings } = useContent();
   const o = {
     name: settings.publisher_name, role: settings.publisher_role,
     titleLine: settings.publisher_title_line, location: settings.publisher_location,
@@ -142,11 +142,11 @@ export function Publisher() {
           <span className="portrait-mark display">ح</span>
         </div>
         <div>
-          <span className="eyebrow">عن الناشر</span>
-          <h1 className="pub-name">{o.name}</h1>
-          <div className="pub-role">{o.role}</div>
-          <div className="pub-title">{o.titleLine}</div>
-          <div className="meta-row" style={{ marginTop: 12 }}><span className="mi"><Icon name="pin" /> {o.location}</span></div>
+          <Editable page="publisher" k="eyebrow" as="span" className="eyebrow" />
+          <EditableText value={o.name} onSave={(v) => updateSettings({ publisher_name: v })} as="h1" className="pub-name" />
+          <EditableText value={o.role} onSave={(v) => updateSettings({ publisher_role: v })} as="div" className="pub-role" />
+          <EditableText value={o.titleLine} onSave={(v) => updateSettings({ publisher_title_line: v })} as="div" className="pub-title" />
+          <div className="meta-row" style={{ marginTop: 12 }}><span className="mi"><Icon name="pin" /> <EditableText value={o.location} onSave={(v) => updateSettings({ publisher_location: v })} as="span" /></span></div>
           <div className="social-row pub-social">
             <a aria-label="لينكدإن"><Icon name="linkedin" size={18} /></a>
             <a aria-label="تويتر"><Icon name="twitter" size={18} /></a>
@@ -158,15 +158,15 @@ export function Publisher() {
         {stats.map(s => <div key={s.l} className="vstat"><div className="vstat-n display tnum">{s.n}</div><div className="vstat-l">{s.l}</div></div>)}
       </div>
       <div className="pub-bio">
-        {o.bio.map((p, i) => <p key={i}>{p}</p>)}
+        {o.bio.map((p, i) => <EditableText key={i} value={p} onSave={(v) => updateSettings({ publisher_bio: o.bio.map((x, idx) => idx === i ? v : x) })} as="p" multiline />)}
       </div>
-      <blockquote className="pullquote" style={{ marginTop: 12 }}>«{o.philosophy}»</blockquote>
+      <blockquote className="pullquote" style={{ marginTop: 12 }}>«<EditableText value={o.philosophy} onSave={(v) => updateSettings({ publisher_philosophy: v })} as="span" multiline />»</blockquote>
       {humain && (
         <div className="pub-book card">
           <div className="cover-wrap" style={{ width: 84, flex: 'none' }}><Cover book={humain} /></div>
           <div>
-            <span className="eyebrow">من تأليفه — متاح كخلاصة</span>
-            <h3 style={{ fontSize: 20, margin: '6px 0' }}>صناعة إنسانٍ ذكيّ</h3>
+            <Editable page="publisher" k="authoredEyebrow" as="span" className="eyebrow" />
+            <h3 style={{ fontSize: 20, margin: '6px 0' }}>{humain.title}</h3>
             <p className="muted" style={{ fontSize: 14.5 }}>{humain.teaser}</p>
             <button className="btn btn-secondary btn-sm" style={{ marginTop: 12 }} onClick={() => navigate('detail', { id: 'humain' })}>استمع للخلاصة <Icon name="chevL" size={16} /></button>
           </div>

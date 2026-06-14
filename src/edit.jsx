@@ -19,6 +19,7 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
   if (!editMode) return <Tag className={className} style={style}>{text}</Tag>;
   return (
     <Tag
+      key="mze-edit"                                       /* fresh mount per mode (don't reuse the view element) */
       className={(className ? className + ' ' : '') + 'mze-editable'}
       style={style}
       contentEditable
@@ -26,10 +27,17 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
       role="textbox"
       tabIndex={0}
       title="انقر للتعديل"
-      ref={(el) => { if (el && el.dataset.init !== '1') { el.innerText = text; el.dataset.init = '1'; } }}
+      /* Self-healing hydration: keep the editable's text in sync with `value`,
+       * but never clobber it while the user is actively typing. This fixes the
+       * disappearing-text bug — React drops the text node when it reuses the
+       * element on re-entry to edit mode, and this restores it on next render. */
+      ref={(el) => {
+        if (!el || el.ownerDocument.activeElement === el) return;
+        if (el.textContent !== text) el.textContent = text;
+      }}
       onClick={(e) => e.stopPropagation()}                /* don't trigger parent nav/cards/play */
       onMouseDown={(e) => e.stopPropagation()}
-      onBlur={(e) => onSave(e.currentTarget.innerText.trim())}
+      onBlur={(e) => onSave((e.currentTarget.textContent || '').trim())}
       onKeyDown={(e) => {
         if (!multiline && e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
         if (e.key === 'Escape') e.currentTarget.blur();

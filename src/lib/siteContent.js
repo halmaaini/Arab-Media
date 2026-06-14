@@ -12,6 +12,12 @@ export const DEFAULT_CONTENT = {
     footerBlurb: 'خلاصة المعرفة بين يديك — استمع للكتاب أو اقرأه، أينما كنت. منصّة عربية تجعل التعلّم عادةً يومية.',
     footerCopyright: '© 2026 الموسوعة الذكية — جميع الحقوق محفوظة.',
     footerMade: 'صُنع بشغف للمعرفة العربية',
+    footerColExplore: 'استكشف',
+    footerColPlatform: 'المنصّة',
+  },
+  publisher: {
+    eyebrow: 'عن الناشر',
+    authoredEyebrow: 'من تأليفه — متاح كخلاصة',
   },
   home: {
     heroEyebrow: 'ملخّص مميّز',
