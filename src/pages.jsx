@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Icon, Cover, fmtDate } from './utils.jsx';
 import { useContent } from './content.jsx';
+import { Editable } from './edit.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, Empty, Field } from './components.jsx';
 import { ThemeToggle } from './shell.jsx';
@@ -91,18 +92,18 @@ export function About() {
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
       <div className="editorial">
-        <span className="eyebrow center">{c.eyebrow}</span>
-        <h1 className="editorial-title">{c.title}</h1>
-        <p className="editorial-lead">{c.lead}</p>
+        <Editable page="about" k="eyebrow" as="span" className="eyebrow center" />
+        <Editable page="about" k="title" as="h1" className="editorial-title" multiline />
+        <Editable page="about" k="lead" as="p" className="editorial-lead" multiline />
         <hr className="hairline" style={{ margin: '36px 0' }} />
         <div className="editorial-cols">
           <div>
-            <h3 className="gold-h">{c.col1Title}</h3>
-            <p>{c.col1Body}</p>
+            <Editable page="about" k="col1Title" as="h3" className="gold-h" />
+            <Editable page="about" k="col1Body" as="p" multiline />
           </div>
           <div>
-            <h3 className="gold-h">{c.col2Title}</h3>
-            <p>{c.col2Body}</p>
+            <Editable page="about" k="col2Title" as="h3" className="gold-h" />
+            <Editable page="about" k="col2Body" as="p" multiline />
           </div>
         </div>
         <div className="value-stats">
@@ -111,7 +112,7 @@ export function About() {
           ))}
         </div>
         <hr className="hairline" style={{ margin: '36px 0' }} />
-        <blockquote className="pullquote">«{c.pullQuote}»</blockquote>
+        <blockquote className="pullquote">«<Editable page="about" k="pullQuote" as="span" multiline />»</blockquote>
         <div className="center" style={{ marginTop: 32 }}>
           <button className="btn btn-primary btn-lg" onClick={() => navigate('browse')}>{c.cta}</button>
         </div>

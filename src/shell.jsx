@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Icon, Cover } from './utils.jsx';
 import { useContent } from './content.jsx';
+import { Editable } from './edit.jsx';
 import { useApp } from './store.jsx';
 
 export function ThemeToggle() {
@@ -131,7 +132,7 @@ export function Footer() {
       <div className="container">
         <div>
           <div className="wordmark">الموسوعة الذكية</div>
-          <p style={{ marginTop: 14, maxWidth: '34ch', fontSize: 14.5, lineHeight: 1.9 }}>{content.brand.footerBlurb}</p>
+          <p style={{ marginTop: 14, maxWidth: '34ch', fontSize: 14.5, lineHeight: 1.9 }}><Editable page="brand" k="footerBlurb" as="span" multiline /></p>
           <div className="social-row">
             <a aria-label="تويتر"><Icon name="twitter" size={18} /></a>
             <a aria-label="لينكدإن"><Icon name="linkedin" size={18} /></a>

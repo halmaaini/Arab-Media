@@ -1,6 +1,7 @@
 /* ===== App.jsx — root router ===== */
 import { ContentProvider } from './content.jsx';
 import { AppProvider, useApp } from './store.jsx';
+import { EditModeBar } from './edit.jsx';
 import { Header, Footer, BottomNav, Toasts } from './shell.jsx';
 import { MiniPlayer, NowPlaying } from './player.jsx';
 import { Home } from './home.jsx';
@@ -44,6 +45,7 @@ function Shell() {
         <div className="mobile-only"><BottomNav /></div>
       </div>
       {trackId && <NowPlaying />}
+      <EditModeBar />
       <Toasts />
     </div>
   );

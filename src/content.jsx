@@ -54,6 +54,7 @@ function toBook(s) {
 
 export function ContentProvider({ children }) {
   const [data, setData] = useState(() => loadData());
+  const [editMode, setEditMode] = useState(false);   // on-page inline edit mode (ephemeral)
 
   const commit = useCallback((updater) => {
     setData((prev) => {
@@ -208,6 +209,7 @@ export function ContentProvider({ children }) {
     // public/shared reads
     books, allBooks, bookById, booksByCat, categories, catById, catName, catCount,
     messages, unreadCount, settings, derivedStats, content,
+    editMode, setEditMode,
     // admin mutations
     createSummary, updateSummary, setStatus, setFeatured, deleteSummary, incrementListens,
     upsertCategory, deleteCategory,

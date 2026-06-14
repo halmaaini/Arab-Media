@@ -1,0 +1,50 @@
+/* edit.css — on-page inline editing affordances */
+.mze-editable {
+  outline: 1.5px dashed var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: text;
+  transition: background .15s ease, outline-color .15s ease;
+}
+.mze-editable:hover { background: rgba(201, 154, 59, .08); }
+.mze-editable:focus { outline-style: solid; background: rgba(201, 154, 59, .14); }
+
+.edit-fab {
+  position: fixed;
+  bottom: 20px;
+  inset-inline-start: 20px;
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+}
+[data-theme="dark"] .edit-fab { background: var(--gold); color: var(--ink); }
+
+.edit-banner {
+  position: fixed;
+  top: 14px;
+  inset-inline: 0;
+  margin-inline: auto;
+  width: max-content;
+  max-width: 92vw;
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px 8px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+}
+[data-theme="dark"] .edit-banner { background: #10302c; }
