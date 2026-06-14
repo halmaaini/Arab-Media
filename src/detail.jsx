@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Icon, Cover, fmtTime, fmtDur, fmtNumFull, fmtDate, useLocal } from './utils.jsx';
 import { useContent } from './content.jsx';
+import { EditableText } from './edit.jsx';
 import { useApp } from './store.jsx';
 import { SectionHead, Carousel } from './components.jsx';
 
@@ -47,7 +48,7 @@ function ReadingPanel({ book }) {
 
 export function Detail() {
   const { route, navigate, playBook, isFav, toggleFav, pushToast, trackId, playing, progress, chapterTime } = useApp();
-  const { books: BOOKS, bookById, catName } = useContent();
+  const { books: BOOKS, bookById, catName, updateSummary } = useContent();
   const book = bookById(route.params.id) || BOOKS[0];
   const [tab, setTab] = useState('listen');
   const readRef = useRef();
@@ -60,6 +61,13 @@ export function Detail() {
   const isThis = trackId === book.id;
   const pos = progress[book.id] || 0;
   const pctRead = Math.min(1, pos / book.dur);
+
+  // inline edits to a key idea: rebuild the whole key_ideas array (store shape {title, body})
+  const saveIdea = (i, field, v) => updateSummary(book.slug, {
+    key_ideas: book.keyIdeas.map((it, idx) => idx === i
+      ? { title: field === 't' ? v : it.t, body: field === 'x' ? v : it.x }
+      : { title: it.t, body: it.x }),
+  });
 
   const related = BOOKS.filter(b => b.id !== book.id && (b.cat === book.cat || b.tags.some(t => book.tags.includes(t)))).slice(0, 6);
   const relatedFill = related.length < 4
@@ -85,9 +93,9 @@ export function Detail() {
             {book.isNew && <span className="badge badge-new">جديد</span>}
             {book.featured && <span className="badge badge-feat">مميّز</span>}
           </div>
-          <h1 className="detail-title">{book.title}</h1>
-          <div className="detail-author">{book.author}</div>
-          <p className="detail-teaser">{book.teaser}</p>
+          <EditableText value={book.title} onSave={(v) => updateSummary(book.slug, { title: v })} as="h1" className="detail-title" multiline />
+          <EditableText value={book.author} onSave={(v) => updateSummary(book.slug, { author: v })} as="div" className="detail-author" />
+          <EditableText value={book.teaser} onSave={(v) => updateSummary(book.slug, { teaser: v })} as="p" className="detail-teaser" multiline />
           <div className="meta-row" style={{ marginTop: 6 }}>
             <span className="mi"><Icon name="clock" /> {fmtDur(book.dur)}</span>
             <span className="mi"><Icon name="headphones" /> {fmtNumFull(book.listens)} استماع</span>
@@ -131,8 +139,8 @@ export function Detail() {
               <div key={i} className="idea-row" onClick={() => { playBook(book.id, { from: chapterTime(book, i), open: true }); }}>
                 <div className="idea-num display">{i + 1}</div>
                 <div className="grow">
-                  <div className="idea-title">{k.t}</div>
-                  <div className="idea-text">{k.x}</div>
+                  <EditableText value={k.t} onSave={(v) => saveIdea(i, 't', v)} as="div" className="idea-title" />
+                  <EditableText value={k.x} onSave={(v) => saveIdea(i, 'x', v)} as="div" className="idea-text" multiline />
                 </div>
                 <div className="idea-jump"><span className="tnum faint">{fmtTime(chapterTime(book, i))}</span><Icon name="play" size={16} /></div>
               </div>

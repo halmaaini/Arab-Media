@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Icon } from './utils.jsx';
 import { useContent } from './content.jsx';
+import { Editable } from './edit.jsx';
 import { useApp } from './store.jsx';
 import { BookCard, ListCard, SectionHead, Carousel } from './components.jsx';
 import { SmartSearch } from './shell.jsx';
@@ -46,7 +47,7 @@ function FilterControls({ cats, setCats, tags, setTags, durs, setDurs, allTags }
 
 export function Browse() {
   const { route, navigate } = useApp();
-  const { books: BOOKS, categories: CATEGORIES, content } = useContent();
+  const { books: BOOKS, categories: CATEGORIES } = useContent();
   const [q, setQ] = useState(route.params.q || '');
   const [cats, setCats] = useState(route.params.cat ? [route.params.cat] : []);
   const [tags, setTags] = useState([]);
@@ -90,8 +91,8 @@ export function Browse() {
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">{content.browse.title}</h1>
-        <p className="page-sub">{content.browse.subtitle}</p>
+        <Editable page="browse" k="title" as="h1" className="page-title" />
+        <Editable page="browse" k="subtitle" as="p" className="page-sub" multiline />
       </div>
 
       {/* Controlled search bar — reflects current q and updates it directly */}

@@ -9,7 +9,7 @@ import { ThemeToggle } from './shell.jsx';
 
 export function Library() {
   const { navigate, favorites, progress } = useApp();
-  const { books: BOOKS, bookById, content } = useContent();
+  const { books: BOOKS, bookById } = useContent();
   const [tab, setTab] = useState('continue');
   const continueBooks = BOOKS.filter(b => (progress[b.id] || 0) > 5 && (progress[b.id] || 0) < b.dur - 5)
     .sort((a, b) => (progress[b.id] || 0) - (progress[a.id] || 0));
@@ -18,8 +18,8 @@ export function Library() {
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">{content.library.title}</h1>
-        <p className="page-sub">{content.library.subtitle}</p>
+        <Editable page="library" k="title" as="h1" className="page-title" />
+        <Editable page="library" k="subtitle" as="p" className="page-sub" multiline />
       </div>
       <div className="detail-tabs" style={{ marginTop: 0 }}>
         <button className={tab === 'continue' ? 'on' : ''} onClick={() => setTab('continue')}>تابِع الاستماع</button>
@@ -38,12 +38,12 @@ export function Library() {
 
 export function Categories() {
   const { navigate } = useApp();
-  const { categories: CATEGORIES, booksByCat, catCount, content } = useContent();
+  const { categories: CATEGORIES, booksByCat, catCount } = useContent();
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div className="page-head">
-        <h1 className="page-title">{content.categories.title}</h1>
-        <p className="page-sub">{content.categories.subtitle}</p>
+        <Editable page="categories" k="title" as="h1" className="page-title" />
+        <Editable page="categories" k="subtitle" as="p" className="page-sub" multiline />
       </div>
       <div className="cat-grid">
         {CATEGORIES.map(c => {
@@ -178,7 +178,7 @@ export function Publisher() {
 
 export function Contact() {
   const { pushToast } = useApp();
-  const { submitMessage, settings, content } = useContent();
+  const { submitMessage, settings } = useContent();
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', body: '' });
   const submit = (e) => { e.preventDefault(); submitMessage(form); setSent(true); pushToast('تم إرسال رسالتك، شكراً لك'); };
@@ -186,9 +186,9 @@ export function Contact() {
   return (
     <div className="container container-narrow" style={{ paddingTop: 24 }}>
       <div className="page-head center">
-        <span className="eyebrow">{content.contact.eyebrow}</span>
-        <h1 className="page-title">{content.contact.title}</h1>
-        <p className="page-sub" style={{ margin: '8px auto 0' }}>{content.contact.subtitle}</p>
+        <Editable page="contact" k="eyebrow" as="span" className="eyebrow" />
+        <Editable page="contact" k="title" as="h1" className="page-title" />
+        <Editable page="contact" k="subtitle" as="p" className="page-sub" style={{ margin: '8px auto 0' }} multiline />
       </div>
       <div className="contact-grid">
         <form className="card contact-form" onSubmit={submit}>

@@ -21,6 +21,14 @@ export const DEFAULT_CONTENT = {
     secNewest: 'أحدث الملخّصات',
     secMost: 'الأكثر استماعاً',
     secAll: 'المكتبة الكاملة',
+    /* Phase 3: ordered, show/hide-able home sections (edited via on-page drag). */
+    layout: [
+      { id: 'continue', visible: true },
+      { id: 'categories', visible: true },
+      { id: 'newest', visible: true },
+      { id: 'most', visible: true },
+      { id: 'all', visible: true },
+    ],
   },
   browse: {
     title: 'استكشاف',

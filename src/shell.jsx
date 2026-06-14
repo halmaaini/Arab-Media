@@ -97,7 +97,6 @@ export function SmartSearch({ big, value: controlledValue, onChange: controlledC
 
 export function Header() {
   const { route, navigate } = useApp();
-  const { content } = useContent();
   const nav = [
     { v: 'home', l: 'الرئيسية' },
     { v: 'browse', l: 'استكشاف' },
@@ -109,7 +108,7 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="container">
-        <div className="wordmark" onClick={() => navigate('home')}>الموسوعة الذكية<span className="sub desktop-only">{content.brand.tagline}</span></div>
+        <div className="wordmark" onClick={() => navigate('home')}>الموسوعة الذكية<Editable page="brand" k="tagline" as="span" className="sub desktop-only" /></div>
         <nav className="top-nav desktop-only">
           {nav.map(n => <a key={n.v} className={route.view === n.v ? 'active' : ''} onClick={() => navigate(n.v)}>{n.l}</a>)}
         </nav>
@@ -126,7 +125,6 @@ export function Header() {
 
 export function Footer() {
   const { navigate } = useApp();
-  const { content } = useContent();
   return (
     <footer className="site-footer desktop-only">
       <div className="container">
@@ -157,8 +155,8 @@ export function Footer() {
       </div>
       <div className="container">
         <div className="footer-bottom">
-          <span>{content.brand.footerCopyright}</span>
-          <span>{content.brand.footerMade}</span>
+          <Editable page="brand" k="footerCopyright" as="span" />
+          <Editable page="brand" k="footerMade" as="span" />
         </div>
       </div>
     </footer>

@@ -98,6 +98,9 @@ const PATHS = {
   layers: 'M12 3l9 5-9 5-9-5 9-5ZM3 13l9 5 9-5M3 17l9 5 9-5',
   logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
   type: 'M4 7V5h16v2M9 19h6M12 5v14',
+  grip: 'M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01',
+  chevUp: 'M6 15l6-6 6 6',
+  eyeOff: 'M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6 0 10 7 10 7a16.8 16.8 0 0 1-2.4 3.1M6.1 6.2A16.6 16.6 0 0 0 2 12s4 7 10 7a10.4 10.4 0 0 0 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2',
 };
 
 export function Icon({ name, size, stroke, fill, style, className }) {

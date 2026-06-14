@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, Cover, Equalizer, Ring, fmtDur, fmtNum } from './utils.jsx';
 import { useContent } from './content.jsx';
+import { Editable } from './edit.jsx';
 import { useApp } from './store.jsx';
 
 export function BookCard({ book, showBadge = true }) {
@@ -71,10 +72,10 @@ export function ContinueCard({ book }) {
   );
 }
 
-export function SectionHead({ title, onMore, moreLabel = 'عرض الكل' }) {
+export function SectionHead({ title, page, ckey, onMore, moreLabel = 'عرض الكل' }) {
   return (
     <div className="sec-head">
-      <h2>{title}</h2>
+      {page && ckey ? <Editable page={page} k={ckey} as="h2" /> : <h2>{title}</h2>}
       {onMore && <span className="more" onClick={onMore}>{moreLabel} <Icon name="chevL" size={16} /></span>}
     </div>
   );
